@@ -139,7 +139,7 @@ document.getElementById('aldosa-my').innerHTML = "<div class=\"header\">\n    <a
                 html += '</div>';
                 html += '<div id="redeemForm_' + c.coupon_id + '"></div>';
               }
-              html += '<div style="font-size:10px;color:#aaa;margin-top:4px;">' + (c.status === "미사용" ? '<span style="color:#16A34A;">사용가능</span>' : '<span style="color:#aaa;">' + c.status + '</span>') + ' · 발급 ' + (c.created_at ? c.created_at.slice(0,10) : '-') + (c.expire_date ? ' · ' + c.expire_date.slice(0,10) + ' 까지' : '') + '</div>';
+              html += '<div style="font-size:10px;color:#aaa;margin-top:4px;">' + (c.status === "미사용" ? '<span style="color:#16A34A;">사용가능</span>' : '<span style="color:#aaa;">' + c.status + (c.used_shop ? ' · ' + c.used_shop : '') + (c.used_serial ? ' · S/N ' + c.used_serial : '') + '</span>') + ' · 발급 ' + (c.created_at ? c.created_at.slice(0,10) : '-') + (c.expire_date ? ' · ' + c.expire_date.slice(0,10) + ' 까지' : '') + '</div>';
               html += '</div>';
             });
           }
@@ -149,20 +149,38 @@ document.getElementById('aldosa-my').innerHTML = "<div class=\"header\">\n    <a
 
     function startRedeemVoucher(couponId) {
       var el = document.getElementById("redeemForm_" + couponId);
-      el.innerHTML = '<div style="margin-top:8px; padding:10px; background:#fafafa; border-radius:2px;">' +
-        '<div style="font-size:10px; color:#999; margin-bottom:6px;">직원에게 폰을 보여주시고, 매장 코드를 입력해 달라고 요청해주세요.</div>' +
-        '<input type="text" id="shopCodeInput_' + couponId + '" maxlength="4" placeholder="매장 코드 4자리" style="width:100%; padding:9px 10px; font-size:14px; text-align:center; letter-spacing:0.1em; border:1px solid #C9A84C; border-radius:1px; margin-bottom:6px;" />' +
-        '<div style="display:flex; gap:6px;">' +
-        '<button onclick="confirmRedeemVoucher(\'' + couponId + '\')" style="flex:1; padding:9px; background:#16A34A; color:#fff; border:none; border-radius:1px; cursor:pointer; font-size:12px;">확인</button>' +
-        '<button onclick="document.getElementById(\'redeemForm_' + couponId + '\').innerHTML=\'\'" style="flex:1; padding:9px; background:#fff; border:1px solid #ddd; color:#888; border-radius:1px; cursor:pointer; font-size:12px;">취소</button>' +
-        '</div></div>';
+      el.innerHTML = '<div style="margin-top:8px; padding:10px; background:#fafafa; border-radius:2px;"><div style="font-size:11px; color:#999;">불러오는 중...</div></div>';
+      fetch(API_URL + "?action=getWatches&member_id=" + member_id)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var watches = (data.success ? data.watches : []).filter(function(w) { return w.status === "승인"; });
+          if (watches.length === 0) {
+            el.innerHTML = '<div style="margin-top:8px; padding:10px; background:#FFF1F2; border-radius:2px; font-size:12px; color:#E11D48;">등록된(승인된) 시계가 없습니다. 먼저 시계를 등록해주세요.</div>';
+            return;
+          }
+          var optionsHtml = watches.map(function(w) {
+            return '<option value="' + w.serial + '">' + w.brand + ' ' + w.model + ' (S/N ' + w.serial + ')</option>';
+          }).join('');
+          el.innerHTML = '<div style="margin-top:8px; padding:10px; background:#fafafa; border-radius:2px;">' +
+            '<div style="font-size:10px; color:#999; margin-bottom:6px;">본 바우처는 ALDOSA에 등록된 시계에 한해 사용하실 수 있습니다. 적용하실 시계가 아직 등록되어 있지 않다면, 먼저 시계를 등록하신 후 사용해주세요.</div>' +
+            '<select id="voucherSerialSelect_' + couponId + '" style="width:100%; padding:9px 10px; font-size:13px; border:1px solid #ddd; border-radius:1px; margin-bottom:10px; background:#fff; color:#1a1a1a;"><option value="">시계 선택</option>' + optionsHtml + '</select>' +
+            '<div style="font-size:10px; color:#999; margin-bottom:6px;">직원에게 폰을 보여주시고, 매장 코드를 입력해 달라고 요청해주세요.</div>' +
+            '<input type="text" id="shopCodeInput_' + couponId + '" maxlength="4" placeholder="매장 코드 4자리" style="width:100%; padding:9px 10px; font-size:14px; text-align:center; letter-spacing:0.1em; border:1px solid #C9A84C; border-radius:1px; margin-bottom:6px;" />' +
+            '<div style="display:flex; gap:6px;">' +
+            '<button onclick="confirmRedeemVoucher(\'' + couponId + '\')" style="flex:1; padding:9px; background:#16A34A; color:#fff; border:none; border-radius:1px; cursor:pointer; font-size:12px;">확인</button>' +
+            '<button onclick="document.getElementById(\'redeemForm_' + couponId + '\').innerHTML=\'\'" style="flex:1; padding:9px; background:#fff; border:1px solid #ddd; color:#888; border-radius:1px; cursor:pointer; font-size:12px;">취소</button>' +
+            '</div></div>';
+        });
     }
 
     function confirmRedeemVoucher(couponId) {
+      var serialSelect = document.getElementById("voucherSerialSelect_" + couponId);
+      var serial = serialSelect.value;
       var input = document.getElementById("shopCodeInput_" + couponId);
       var shopCode = input.value.trim();
+      if (!serial) { alert("적용할 시계를 선택해주세요."); return; }
       if (!shopCode) return;
-      var params = new URLSearchParams({ action: "redeemCouponByShopCode", coupon_id: couponId, shop_code: shopCode });
+      var params = new URLSearchParams({ action: "redeemCouponByShopCode", coupon_id: couponId, shop_code: shopCode, serial: serial });
       fetch(API_URL + "?" + params.toString())
         .then(function(r) { return r.json(); })
         .then(function(data) {
