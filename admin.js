@@ -591,6 +591,11 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
   }
 
   // ── 시리얼 보완 ──────────────────────────────────────
+  var CLOUDINARY_CLOUD_NAME = "dztigbzcp";
+  var CLOUDINARY_UPLOAD_PRESET = "aldosa_unsigned";
+  var CLOUDINARY_UPLOAD_URL = "https://api.cloudinary.com/v1_1/" + CLOUDINARY_CLOUD_NAME + "/image/upload";
+  var serialFillImageUrl = {};
+
   function toggleSerialFillPanel(requestId) {
     var row = document.getElementById("serialFillRow_" + requestId);
     if (row.style.display === "none") {
@@ -599,25 +604,61 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
         '<div class="items-panel">' +
         '<div class="field-row3" style="margin-bottom:8px;">' +
         '<div class="field" style="margin-bottom:0;"><input type="text" id="serialFillInput_' + requestId + '" placeholder="확인된 시리얼 입력" /></div>' +
-        '<div class="field" style="margin-bottom:0;"><input type="text" id="serialFillImage_' + requestId + '" placeholder="사진 URL (선택, 권장)" /></div>' +
+        '<div class="field" style="margin-bottom:0;">' +
+        '<div class="upload-area" id="serialUploadArea_' + requestId + '" style="border:1px dashed #ddd; border-radius:1px; padding:9px 10px; text-align:center; cursor:pointer; position:relative; font-size:12px; color:#888; background:#fff;">' +
+        '<input type="file" id="serialFillFile_' + requestId + '" accept="image/*" style="position:absolute; inset:0; opacity:0; cursor:pointer;" onchange="handleSerialPhotoSelect(\'' + requestId + '\')" />' +
+        '<span id="serialUploadLabel_' + requestId + '">📷 사진 선택 (선택, 권장)</span>' +
+        '</div></div>' +
         '<div></div>' +
         '</div>' +
-        '<button class="btn-main" onclick="confirmSerialFill(\'' + requestId + '\')">시리얼 확정 등록</button>' +
+        '<button class="btn-main" id="serialFillBtn_' + requestId + '" onclick="confirmSerialFill(\'' + requestId + '\')">시리얼 확정 등록</button>' +
         '</div>';
     } else {
       row.style.display = "none";
     }
   }
 
+  function handleSerialPhotoSelect(requestId) {
+    var file = document.getElementById("serialFillFile_" + requestId).files[0];
+    if (!file) return;
+    var label = document.getElementById("serialUploadLabel_" + requestId);
+    var area = document.getElementById("serialUploadArea_" + requestId);
+    label.textContent = "업로드 중...";
+    area.style.opacity = "0.6";
+
+    var formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+    formData.append("tags", "serial_verify_" + requestId);
+
+    fetch(CLOUDINARY_UPLOAD_URL, { method: "POST", body: formData })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        area.style.opacity = "1";
+        if (data.secure_url) {
+          serialFillImageUrl[requestId] = data.secure_url;
+          label.textContent = "✓ 사진 첨부됨 (" + file.name + ")";
+          area.style.borderColor = "#C9A84C";
+          area.style.background = "#FFFDF5";
+        } else {
+          label.textContent = "업로드 실패, 다시 선택해주세요";
+        }
+      })
+      .catch(function() {
+        area.style.opacity = "1";
+        label.textContent = "업로드 실패, 다시 선택해주세요";
+      });
+  }
+
   function confirmSerialFill(requestId) {
     var serial = document.getElementById("serialFillInput_" + requestId).value.trim();
-    var imageUrl = document.getElementById("serialFillImage_" + requestId).value.trim();
+    var imageUrl = serialFillImageUrl[requestId] || "";
     if (!serial) { alert("시리얼을 입력하세요."); return; }
     var params = new URLSearchParams({ action: "adminFillSerial", admin_key: adminKey, request_id: requestId, serial: serial, image_url: imageUrl, admin_name: "ALDOSA" });
     fetch(API_URL + "?" + params.toString())
       .then(function(r) { return r.json(); })
       .then(function(data) {
-        if (data.success) { loadASManage(); } else { alert(data.message); }
+        if (data.success) { delete serialFillImageUrl[requestId]; loadASManage(); } else { alert(data.message); }
       });
   }
 
