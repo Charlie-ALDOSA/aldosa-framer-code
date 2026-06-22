@@ -313,8 +313,9 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       html += '<td>' + (r.ofr_number || '-') + '</td>';
       html += '<td>' + (r.store_name || '-') + '<br><span style="color:#aaa;">' + (r.staff_name||'') + '</span></td>';
       html += '<td>' + r.brand + ' ' + (r.model||'') + '</td>';
-      var needsSerial = !r.serial || ["미기재","미상","없음","모름","확인불가","미확인"].indexOf((r.serial||"").trim()) !== -1;
-      html += '<td>' + (!needsSerial ? r.serial : '<button class="btn-sm" style="background:#fff;border:1px solid #E11D48;color:#E11D48;padding:5px 8px;font-size:10px;" onclick="toggleSerialFillPanel(\'' + r.request_id + '\')">시리얼 보완</button>') + '</td>';
+      var serialStr = String(r.serial || "").trim();
+      var needsSerial = !serialStr || ["미기재","미상","없음","모름","확인불가","미확인"].indexOf(serialStr) !== -1;
+      html += '<td>' + (!needsSerial ? serialStr : '<button class="btn-sm" style="background:#fff;border:1px solid #E11D48;color:#E11D48;padding:5px 8px;font-size:10px;" onclick="toggleSerialFillPanel(\'' + r.request_id + '\')">시리얼 보완</button>') + '</td>';
       html += '<td>' + (r.intake_name||'-') + '<br><span style="color:#aaa;">' + (r.intake_phone||'') + '</span></td>';
       html += '<td>' + renderStageTrack(r) + '</td>';
       html += '<td><button class="btn-sm btn-items-toggle" onclick="toggleItemsPanel(\'' + r.request_id + '\')">항목보기</button></td>';
