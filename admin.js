@@ -164,9 +164,14 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
         var html = "";
         data.pending.forEach(function(p) {
           var img = p.watch_image_url || p.warranty_image_url;
+          var needsModel = !p.model;
           html += '<div class="asset-row">';
           html += img ? '<img src="' + img + '" onclick="window.open(\'' + img + '\')" />' : '<div class="no-img">사진없음</div>';
-          html += '<div class="asset-info"><div class="brand">' + p.brand + '</div><div class="model">' + p.model + '</div><div class="meta">Ref. ' + (p.reference||'-') + '</div></div>';
+          html += '<div class="asset-info"><div class="brand">' + p.brand + '</div>';
+          html += needsModel
+            ? '<div style="margin-top:4px;"><input type="text" id="modelInput_' + p.asset_id + '" placeholder="모델명 입력 (확인 후)" style="width:100%;padding:7px 8px;font-size:12px;border:1px solid #E11D48;border-radius:1px;" /><div style="font-size:10px;color:#E11D48;margin-top:3px;">모델명 미확인 — 사진 확인 후 입력해주세요</div></div>'
+            : '<div class="model">' + p.model + '</div>';
+          html += '<div class="meta">Ref. ' + (p.reference||'-') + '</div></div>';
           html += '<div class="asset-info"><div class="meta">S/N: ' + p.serial + '<br>구입처: ' + (p.purchase_place||'-') + '<br>등록: ' + formatDate(p.registered_at) + '</div></div>';
           html += '<div class="asset-actions">';
           html += '<button class="btn-sm btn-approve" onclick="approveAsset(\'' + p.asset_id + '\')">승인</button>';
@@ -178,7 +183,12 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
   }
 
   function approveAsset(assetId) {
-    fetch(API_URL + "?action=adminApprove&admin_key=" + encodeURIComponent(adminKey) + "&watch_id=" + assetId + "&admin_name=ALDOSA")
+    var modelInput = document.getElementById("modelInput_" + assetId);
+    var model = modelInput ? modelInput.value.trim() : "";
+    if (modelInput && !model) { alert("모델명을 입력해주세요. (확인이 어려우면 빈 칸으로 둔 채 보류하셔도 됩니다)"); return; }
+    var url = API_URL + "?action=adminApprove&admin_key=" + encodeURIComponent(adminKey) + "&watch_id=" + assetId + "&admin_name=ALDOSA";
+    if (model) url += "&model=" + encodeURIComponent(model);
+    fetch(url)
       .then(function(r) { return r.json(); })
       .then(function() { loadPending(); });
   }
