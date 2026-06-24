@@ -976,12 +976,14 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
         var el = document.getElementById("pendingOrdersList");
         var orders = data.success ? data.orders : [];
         if (orders.length === 0) { el.innerHTML = '<div class="empty-msg">입금 확인 대기중인 주문이 없습니다.</div>'; return; }
-        var html = '<table class="code-table"><tr><th>주문번호</th><th>회원</th><th>종류</th><th>내용</th><th>결제금액</th><th>요청일</th><th></th></tr>';
+        var html = '<table class="code-table"><tr><th>주문번호</th><th>회원</th><th>종류</th><th>내용</th><th>받는사람</th><th>배송지</th><th>결제금액</th><th>요청일</th><th></th></tr>';
         orders.slice().reverse().forEach(function(o) {
           html += '<tr><td style="font-size:10px;color:#888;">' + o.order_id + '</td>';
           html += '<td>' + (o.member_name||'-') + '</td>';
           html += '<td>' + o.order_type + '</td>';
-          html += '<td style="max-width:200px;font-size:12px;">' + (o.items_summary || '-') + '</td>';
+          html += '<td style="max-width:160px;font-size:12px;">' + (o.items_summary || '-') + '</td>';
+          html += '<td>' + (o.recipient_name||'-') + '<br><span style="color:#888;font-size:11px;">' + (o.recipient_phone||'') + '</span></td>';
+          html += '<td style="max-width:160px;font-size:12px;color:#777;">' + (o.recipient_address||'-') + (o.shipping_memo ? '<br><span style="color:#aaa;">(' + o.shipping_memo + ')</span>' : '') + '</td>';
           html += '<td style="font-weight:600;">' + parseInt(o.final_amount).toLocaleString("ko-KR") + '원</td>';
           html += '<td>' + formatDate(o.created_at) + '</td>';
           html += '<td><button class="btn-sm btn-approve" onclick="confirmOrderAdmin(\'' + o.order_id + '\')">확정</button></td></tr>';
