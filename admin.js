@@ -338,7 +338,9 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       var serialStr = String(r.serial || "").trim();
       var needsSerial = !serialStr || ["미기재","미상","없음","모름","확인불가","미확인"].indexOf(serialStr) !== -1;
       html += '<td>' + (!needsSerial ? serialStr : '<button class="btn-sm" style="background:#fff;border:1px solid #E11D48;color:#E11D48;padding:5px 8px;font-size:10px;" onclick="toggleSerialFillPanel(\'' + r.request_id + '\')">시리얼 보완</button>') + '</td>';
-      html += '<td>' + (r.intake_name||'-') + '<br><span style="color:#aaa;">' + (r.intake_phone||'') + '</span></td>';
+      html += '<td>' + (r.intake_name||'-') + '<br><span style="color:#aaa;">' + (r.intake_phone||'') + '</span>' +
+        (r.symptom ? '<br><span style="color:#888; font-size:11px; cursor:help;" title="' + r.symptom.replace(/"/g,'&quot;') + '">📝 ' + r.symptom.slice(0,18) + (r.symptom.length>18?'...':'') + '</span>' : '') +
+        (r.symptom_image_url ? ' <a href="' + r.symptom_image_url + '" target="_blank" style="font-size:11px;">📷</a>' : '') + '</td>';
       html += '<td>' + renderStageTrack(r) + '</td>';
       html += '<td><button class="btn-sm btn-items-toggle" onclick="toggleItemsPanel(\'' + r.request_id + '\')">항목보기</button></td>';
       html += '<td><button class="btn-sm" style="background:#fff;border:1px solid #C9A84C;color:#C9A84C;" onclick="toggleNotesPanel(\'' + r.request_id + '\')">메모</button></td>';
