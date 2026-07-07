@@ -1276,7 +1276,7 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
 
       html += '<div class="panel" style="margin-bottom:14px;">';
       html += '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">';
-      html += '<div><b>' + q.brand + ' ' + q.model + '</b> <span style="color:#999;font-size:11px;">' + q.request_id + ' · 수리처: ' + (q.customer_display_name || '-') + '</span></div>';
+     html += '<div><b>' + q.brand + ' ' + q.model + '</b> <span style="color:#999;font-size:11px;">' + q.request_id + ' · 수리처: ' + (q.customer_display_name || '-') + ' · 담당자: ' + (q.staff_name || '-') + '</span></div>';
       html += '<span class="status-tag ' + (isPending ? 'tag-대기중' : 'tag-승인') + '">' + q.quote_status + '</span>';
       html += '</div>';
 
