@@ -831,7 +831,7 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       });
   }
 
-  function renderCodes() {
+function renderCodes() {
     var searchEl = document.getElementById("codeSearch");
     var keyword = searchEl ? searchEl.value.toLowerCase() : "";
     var filtered = codesCache.filter(function(c) {
@@ -845,7 +845,7 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       el.innerHTML = '<div class="empty-msg">검색 결과가 없습니다.</div>';
       return;
     }
-    var html = '<table class="code-table"><tr><th>코드</th><th>의뢰인</th><th>브랜드/모델</th><th>시리얼</th><th>상태</th><th>접수일</th><th>사용일</th></tr>';
+    var html = '<table class="code-table"><tr><th>코드</th><th>의뢰인</th><th>브랜드/모델</th><th>시리얼</th><th>상태</th><th>접수일</th><th>사용일</th><th>관리</th></tr>';
     filtered.slice().reverse().forEach(function(c) {
       html += '<tr><td style="font-weight:600;">' + c.code + '<br><span style="color:#bbb; font-size:9px; font-weight:400;">' + (c.request_id||'') + '</span></td>';
       html += '<td>' + (c.intake_name||'-') + '<br><span style="color:#aaa;">' + (c.intake_phone||'') + '</span></td>';
@@ -853,13 +853,28 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       html += '<td>' + (c.serial||'-') + '</td>';
       html += '<td><span class="status-chip chip-' + c.status + '">' + c.status + '</span></td>';
       html += '<td>' + (c.requested_at ? formatDate(c.requested_at) : formatDate(c.created_at)) + '</td>';
-      html += '<td>' + (c.claimed_at ? formatDate(c.claimed_at) : '-') + '</td></tr>';
+      html += '<td>' + (c.claimed_at ? formatDate(c.claimed_at) : '-') + '</td>';
+      html += '<td>' + (c.status === "미사용잠금" ? '<button class="btn-sm" style="background:#C9A84C;color:#fff;" onclick="reactivateCodeAdmin(\'' + c.code_id + '\')">재활성화</button>' : '-') + '</td>';
+      html += '</tr>';
     });
     html += '</table>';
     el.innerHTML = html;
   }
 
-  // ── 전체 자산 ───────────────────────────────────────
+  function reactivateCodeAdmin(codeId) {
+    if (!confirm("이 코드를 재활성화할까요? (재활성화 시점부터 3일간 유효합니다)")) return;
+    var params = new URLSearchParams({ action: "adminReactivateCode", admin_key: adminKey, code_id: codeId });
+    fetch(API_URL + "?" + params.toString())
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!data.success) { alert(data.message); return; }
+        alert("코드가 재활성화되었습니다. (3일간 유효)");
+        loadCodes();
+      })
+      .catch(function() { alert("오류가 발생했습니다."); });
+  }
+
+ // ── 전체 자산 ───────────────────────────────────────
   function loadAllAssets() {
     fetch(API_URL + "?action=adminGetAllAssets&admin_key=" + encodeURIComponent(adminKey))
       .then(function(r) { return r.json(); })
