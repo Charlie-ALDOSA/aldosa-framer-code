@@ -588,8 +588,13 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
         html += '</tr>';
       });
     }
-    html += '<tr class="total-row"><td colspan="2">항목 합계</td><td style="text-align:right;">' + total.toLocaleString("ko-KR") + '원</td><td></td></tr>';
+var previewVat = Math.round(total * 0.1);
+    var previewCharge = total + previewVat;
+    html += '<tr class="total-row"><td colspan="2">항목 합계 (수수료 포함, 부가세 별도)</td><td style="text-align:right;">' + total.toLocaleString("ko-KR") + '원</td><td></td></tr>';
     html += '</table>';
+    html += '<div style="background:#FFFBF0; border:1px solid #F0C040; border-radius:2px; padding:10px 12px; font-size:11px; color:#8B6914; margin-bottom:12px; line-height:1.7;">';
+    html += '위 합계에 부가세 10%를 더하면 최종 청구금액 ' + previewCharge.toLocaleString("ko-KR") + '원이 됩니다. 아래 버튼을 눌러야 견적/청구 칸에 자동 반영됩니다.';
+    html += '</div>';
 
     html += '<div class="field-row3" style="margin-bottom:0;">';
     html += '<div class="field" style="margin-bottom:0;"><select id="itemType_' + requestId + '" onchange="handleItemTypeChange(\'' + requestId + '\')">';
@@ -599,7 +604,7 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
     html += '<div class="field" style="margin-bottom:0;"><input type="number" id="itemCost_' + requestId + '" placeholder="비용(원)" /></div>';
     html += '</div>';
     html += '<button class="btn-main" onclick="addASItem(\'' + requestId + '\')">항목 추가</button>';
-    html += '<button class="btn-apply-total" onclick="applyItemsTotal(\'' + requestId + '\',' + total + ')">합계를 청구금액에 반영 (' + total.toLocaleString("ko-KR") + '원)</button>';
+    html += '<button class="btn-apply-total" onclick="applyItemsTotal(\'' + requestId + '\',' + total + ')">항목 합계에 부가세 반영하여 청구금액 산출 (' + previewCharge.toLocaleString("ko-KR") + '원)</button>';
     html += '</div>';
     document.getElementById("itemsPanel_" + requestId).innerHTML = html;
   }
@@ -637,9 +642,13 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       .then(function() { loadASItems(requestId); });
   }
 
-  function applyItemsTotal(requestId, total) {
+function applyItemsTotal(requestId, total) {
+    var vat = Math.round(total * 0.1);
+    var charge = total + vat;
+    var quoteInput = document.getElementById("quote_" + requestId);
     var chargeInput = document.getElementById("charge_" + requestId);
-    if (chargeInput) chargeInput.value = total;
+    if (quoteInput) quoteInput.value = total;
+    if (chargeInput) chargeInput.value = charge;
     saveBilling(requestId);
   }
 
