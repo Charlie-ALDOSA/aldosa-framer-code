@@ -372,21 +372,12 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       el.innerHTML = '<div class="empty-msg">등록된 AS 건이 없습니다.</div>';
       return;
     }
-    // 취소완료된 건은 목록 맨 아래로 내려서, 위쪽엔 항상 유효한 진행 건만 먼저 보이게 합니다.
-    // (취소요청 중인 건은 아직 관리자 처리가 필요한 상태라 일반 건과 동일하게 위쪽에 유지합니다)
-    var sorted = asListCache.slice().reverse();
-    sorted.sort(function(a, b) {
-      var aCancelled = a.order_status === "취소완료" ? 1 : 0;
-      var bCancelled = b.order_status === "취소완료" ? 1 : 0;
-      return aCancelled - bCancelled;
-    });
     var html = '<table class="code-table"><tr><th>접수번호</th><th>점포/담당자</th><th>브랜드/모델</th><th>S/N</th><th>의뢰인</th><th>진행단계</th><th>수리항목</th><th>메모</th><th>견적/청구</th><th>접수일</th></tr>';
-    sorted.forEach(function(r) {
-      var isCancelled = r.order_status === "취소완료";
-      html += '<tr' + (isCancelled ? ' style="opacity:0.45;"' : '') + '>';
+    asListCache.slice().reverse().forEach(function(r) {
+      html += '<tr>';
       html += '<td style="font-size:10px; color:#888;">' + r.request_id + '</td>';
       html += '<td>' + (r.store_name || '-') + '<br><span style="color:#aaa;">' + (r.staff_name||'') + '</span>' + (r.ofr_number ? '<br><span style="color:#bbb; font-size:10px;">OFR ' + r.ofr_number + '</span>' : '') + '</td>';
-      html += '<td' + (isCancelled ? ' style="text-decoration:line-through;"' : '') + '>' + r.brand + (r.brand_type === "기타" ? ' <span style="font-size:9px; background:#F9FAFB; border:1px solid #E5E7EB; color:#9CA3AF; padding:1px 5px; border-radius:2px;">기타</span>' : '') + ' ' + (r.model||'') + '</td>';
+      html += '<td>' + r.brand + (r.brand_type === "기타" ? ' <span style="font-size:9px; background:#F9FAFB; border:1px solid #E5E7EB; color:#9CA3AF; padding:1px 5px; border-radius:2px;">기타</span>' : '') + ' ' + (r.model||'') + '</td>';
       var serialStr = String(r.serial || "").trim();
       var needsSerial = !serialStr || ["미기재","미상","없음","모름","확인불가","미확인"].indexOf(serialStr) !== -1;
       html += '<td>' + (!needsSerial ? serialStr : '<button class="btn-sm" style="background:#fff;border:1px solid #E11D48;color:#E11D48;padding:5px 8px;font-size:10px;" onclick="toggleSerialFillPanel(\'' + r.request_id + '\')">시리얼 보완</button>') + '</td>';
