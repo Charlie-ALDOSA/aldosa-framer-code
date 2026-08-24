@@ -1,10 +1,7 @@
 var styleEl_aldosa_admin = document.createElement('style');
-styleEl_aldosa_admin.textContent = "\n  * { margin: 0; padding: 0; box-sizing: border-box; }\n  body { background: #F4F4F2; min-height: 100vh; font-family: 'Helvetica Neue', Arial, sans-serif; color: #1a1a1a; }\n  .header { background: #1a1a1a; padding: 16px 40px; display: flex; align-items: center; justify-content: space-between; }\n  .header .logo { font-size: 16px; font-weight: 300; letter-spacing: 0.3em; color: #C9A84C; }\n  .header .badge { font-size: 10px; letter-spacing: 0.15em; color: #888; text-transform: uppercase; margin-left: 12px; }\n  .main { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }\n\n  .lock-screen { max-width: 360px; margin: 80px auto; background: #fff; border: 1px solid #ddd; border-top: 3px solid #C9A84C; border-radius: 2px; padding: 36px; }\n  .lock-screen h2 { font-size: 15px; letter-spacing: 0.1em; margin-bottom: 20px; }\n  .lock-screen input { width: 100%; background: #fafafa; border: 1px solid #e0e0e0; border-radius: 1px; padding: 11px 14px; font-size: 14px; outline: none; margin-bottom: 12px; }\n  .lock-screen input:focus { border-color: #C9A84C; }\n  .lock-screen button { width: 100%; background: #1a1a1a; border: none; border-radius: 1px; padding: 12px; font-size: 12px; letter-spacing: 0.15em; color: #fff; text-transform: uppercase; cursor: pointer; }\n  .lock-screen button:hover { background: #C9A84C; }\n  .lock-msg { font-size: 11px; color: #E11D48; margin-top: 10px; text-align: center; display: none; }\n\n  .tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid #ddd; flex-wrap: wrap; }\n  .tab { padding: 10px 18px; font-size: 12px; letter-spacing: 0.08em; color: #888; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; }\n  .tab.active { color: #1a1a1a; border-bottom-color: #C9A84C; font-weight: 500; }\n  .tab-content { display: none; }\n  .tab-content.active { display: block; }\n\n  .panel { background: #fff; border: 1px solid #ddd; border-radius: 2px; padding: 24px; margin-bottom: 16px; overflow-x: auto; }\n  .panel h3 { font-size: 11px; letter-spacing: 0.15em; color: #C9A84C; text-transform: uppercase; margin-bottom: 16px; }\n\n  .asset-row { display: grid; grid-template-columns: 90px 1fr 1fr 140px; gap: 16px; align-items: start; padding: 16px 0; border-bottom: 1px solid #eee; }\n  .asset-row:last-child { border-bottom: none; }\n  .asset-row img { width: 90px; height: 90px; object-fit: cover; border-radius: 2px; border: 1px solid #eee; cursor: pointer; }\n  .asset-row .no-img { width: 90px; height: 90px; background: #f5f5f5; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #bbb; }\n  .asset-info .brand { font-size: 10px; letter-spacing: 0.15em; color: #C9A84C; text-transform: uppercase; }\n  .asset-info .model { font-size: 15px; margin: 2px 0; }\n  .asset-info .meta { font-size: 11px; color: #999; line-height: 1.6; }\n  .asset-actions { display: flex; flex-direction: column; gap: 6px; }\n  .btn-sm { padding: 8px; font-size: 11px; letter-spacing: 0.08em; border-radius: 1px; cursor: pointer; border: none; text-align: center; }\n  .btn-approve { background: #16A34A; color: #fff; }\n  .btn-approve:hover { background: #15803d; }\n  .btn-reject { background: #fff; border: 1px solid #FDA4AF; color: #E11D48; }\n  .btn-reject:hover { background: #FFF1F2; }\n  .empty-msg { text-align: center; padding: 40px; color: #aaa; font-size: 12px; }\n\n  .field { margin-bottom: 14px; }\n  .field label { display: block; font-size: 11px; letter-spacing: 0.1em; color: #999; text-transform: uppercase; margin-bottom: 6px; }\n  .field input, .field select, .field textarea { width: 100%; background: #fafafa; border: 1px solid #e0e0e0; border-radius: 1px; padding: 10px 12px; font-size: 13px; outline: none; font-family: inherit; }\n  .field input:focus, .field select:focus, .field textarea:focus { border-color: #C9A84C; background: #fff; }\n  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }\n  .field-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }\n  .btn-main { background: #C9A84C; border: none; border-radius: 1px; padding: 12px; font-size: 12px; letter-spacing: 0.15em; color: #fff; text-transform: uppercase; cursor: pointer; width: 100%; margin-top: 8px; }\n  .btn-main:hover { background: #b8943f; }\n  .msg-box { margin-top: 12px; padding: 10px 14px; border-radius: 1px; font-size: 12px; text-align: center; display: none; }\n  .msg-box.error { background: #FFF1F2; border: 1px solid #FDA4AF; color: #E11D48; }\n  .msg-box.success { background: #F0FDF4; border: 1px solid #86EFAC; color: #16A34A; }\n\n  .code-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 980px; }\n  .code-table th { text-align: left; padding: 8px; color: #999; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; border-bottom: 1px solid #eee; white-space: nowrap; }\n  .code-table td { padding: 10px 8px; border-bottom: 1px solid #f5f5f5; vertical-align: top; }\n  .status-chip { font-size: 10px; padding: 3px 8px; border-radius: 2px; }\n  .chip-\ubbf8\uc0ac\uc6a9 { background: #FFF8E7; color: #8B6914; }\n  .chip-\uc0ac\uc6a9\uc644\ub8cc { background: #F0FDF4; color: #16A34A; }\n\n  .all-asset-search { margin-bottom: 16px; width: 100%; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 1px; font-size: 13px; }\n  .status-tag { font-size: 10px; padding: 2px 8px; border-radius: 2px; }\n  .tag-\ub300\uae30\uc911 { background: #FFF8E7; color: #8B6914; }\n  .tag-\uc2b9\uc778 { background: #F0FDF4; color: #16A34A; }\n  .tag-\uac70\uc808 { background: #FFF1F2; color: #E11D48; }\n  .tag-\ubcf4\uc644\uc694\ucc45 { background: #FFF8E7; color: #8B6914; }\n  .tag-\uc811\uc218\uc644\ub8cc { background: #FFF8E7; color: #8B6914; }\n  .tag-\ucd9c\uace0\uc644\ub8cc { background: #F0FDF4; color: #16A34A; }\n  .tag-silver { background: #f0f0f0; color: #666; }\n  .tag-gold { background: #FFF8E7; color: #8B6914; }\n  .tag-platinum { background: #1a1a1a; color: #C9A84C; }\n\n  .stage-track { display: flex; gap: 4px; }\n  .stage-dot { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; border: 1px solid #ddd; background: #fafafa; color: #aaa; flex-shrink: 0; }\n  .stage-dot.done { background: #C9A84C; border-color: #C9A84C; color: #fff; }\n  .stage-dot:hover { border-color: #C9A84C; }\n  .stage-labels { display: flex; gap: 4px; margin-top: 4px; }\n  .stage-labels span { width: 30px; font-size: 8px; text-align: center; color: #bbb; }\n\n  .stage-list { display: flex; flex-direction: column; gap: 2px; min-width: 150px; }\n  .stage-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; padding: 4px 0; border-bottom: 1px solid #f5f5f5; }\n  .stage-row:last-child { border-bottom: none; }\n  .stage-row-check { display: flex; align-items: center; gap: 6px; cursor: pointer; color: #999; white-space: nowrap; }\n  .stage-row-check.done { color: #1a1a1a; font-weight: 500; }\n  .stage-dot-v { width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; border: 1px solid #ddd; background: #fafafa; color: #aaa; flex-shrink: 0; }\n  .stage-dot-v.done { background: #C9A84C; border-color: #C9A84C; color: #fff; }\n  .stage-row-date { display: flex; align-items: center; gap: 5px; color: #999; font-size: 10px; white-space: nowrap; }\n  .stage-row-date input[type=\"date\"] { font-size: 10px; padding: 2px 4px; border: 1px solid #C9A84C; border-radius: 1px; }\n  .stage-edit-link { font-size: 9px; color: #C9A84C; cursor: pointer; border: none; background: none; padding: 0; text-decoration: underline; }\n\n  .billing-edit { display: flex; gap: 4px; align-items: center; }\n  .billing-edit input { width: 90px; padding: 5px 6px; font-size: 11px; border: 1px solid #e0e0e0; border-radius: 1px; }\n  .billing-edit button { padding: 5px 8px; font-size: 10px; background: #1a1a1a; color: #fff; border: none; border-radius: 1px; cursor: pointer; }\n\n  .items-panel { background: #fafafa; border: 1px solid #eee; border-radius: 2px; padding: 16px; }\n  .items-table { width: 100%; font-size: 12px; margin-bottom: 12px; border-collapse: collapse; }\n  .items-table th { text-align: left; color: #999; font-size: 10px; padding: 4px; border-bottom: 1px solid #e5e5e5; }\n  .items-table td { padding: 6px 4px; border-bottom: 1px solid #f0f0f0; }\n  .items-table tr.total-row td { border-bottom: none; border-top: 2px solid #C9A84C; font-weight: 600; padding-top: 8px; }\n  .item-del-btn { padding: 3px 8px; font-size: 10px; background: #fff; border: 1px solid #FDA4AF; color: #E11D48; border-radius: 1px; cursor: pointer; }\n  .btn-items-toggle { background: #1a1a1a; color: #fff; }\n  .btn-apply-total { background: #C9A84C; color: #fff; width: 100%; padding: 9px; font-size: 11px; letter-spacing: 0.1em; border: none; border-radius: 1px; cursor: pointer; margin-top: 4px; }\n  .vendor-select-box { margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px dashed #ddd; }\n  .vendor-select-box label { display: block; font-size: 11px; color: #999; margin-bottom: 6px; }\n  .vendor-select-box select { width: 100%; background: #fff; border: 1px solid #e0e0e0; border-radius: 1px; padding: 9px 10px; font-size: 13px; }\n  .member-panel { background: #fafafa; border: 1px solid #eee; border-radius: 2px; padding: 16px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }\n  .member-panel .mp-box { background: #fff; border: 1px solid #e5e5e5; border-radius: 2px; padding: 12px; }\n  .member-panel .mp-box h5 { font-size: 11px; letter-spacing: 0.1em; color: #C9A84C; text-transform: uppercase; margin-bottom: 10px; }\n  .member-panel input, .member-panel select { width: 100%; padding: 7px 8px; font-size: 12px; border: 1px solid #e0e0e0; border-radius: 1px; margin-bottom: 6px; }\n  .member-panel button { width: 100%; padding: 8px; font-size: 11px; background: #1a1a1a; color: #fff; border: none; border-radius: 1px; cursor: pointer; }\n  .member-panel button:hover { background: #C9A84C; }\n  @media (max-width: 700px) {\n    .member-panel { grid-template-columns: 1fr; }\n  }\n\n  .archive-carousel-wrap { position: relative; max-width: 560px; margin: 0 auto; }\n  .archive-shot-area {\n    aspect-ratio: 4 / 3; background: linear-gradient(135deg, #E8E5DC, #D8D3C4); border-radius: 2px 2px 0 0;\n    display: flex; align-items: center; justify-content: center; color: #999; font-size: 12.5px; text-align: center;\n  }\n  .archive-card { border: 1px solid #ddd; border-radius: 2px; overflow: hidden; background: #fff; }\n  .archive-card-body { padding: 20px 22px 24px; }\n  .archive-card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }\n  .archive-yearmonth { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: #fff; background: #16233A; padding: 4px 10px; border-radius: 2px; }\n  .archive-index { font-size: 11px; color: #bbb; }\n  .archive-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }\n  .archive-memo { font-size: 13px; color: #666; line-height: 1.7; white-space: pre-line; }\n  .archive-nav-btn {\n    position: absolute; top: 35%; transform: translateY(-50%); width: 38px; height: 38px; border-radius: 50%;\n    background: #fff; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center;\n    cursor: pointer; font-size: 17px; color: #1a1a1a; box-shadow: 0 2px 8px rgba(0,0,0,0.08); z-index: 2; user-select: none;\n  }\n  .archive-nav-btn:hover { border-color: #C9A84C; color: #C9A84C; }\n  .archive-nav-btn.prev { left: -19px; }\n  .archive-nav-btn.next { right: -19px; }\n  .archive-nav-btn.disabled { opacity: 0.3; cursor: default; pointer-events: none; }\n  .archive-dots { display: flex; justify-content: center; gap: 7px; margin-top: 18px; }\n  .archive-dot { width: 7px; height: 7px; border-radius: 50%; background: #ddd; cursor: pointer; }\n  .archive-dot.active { background: #C9A84C; width: 20px; border-radius: 4px; }\n";
+styleEl_aldosa_admin.textContent = "\n  * { margin: 0; padding: 0; box-sizing: border-box; }\n  body { background: #F4F4F2; min-height: 100vh; font-family: 'Helvetica Neue', Arial, sans-serif; color: #1a1a1a; }\n  .header { background: #1a1a1a; padding: 16px 40px; display: flex; align-items: center; justify-content: space-between; }\n  .header .logo { font-size: 16px; font-weight: 300; letter-spacing: 0.3em; color: #C9A84C; }\n  .header .badge { font-size: 10px; letter-spacing: 0.15em; color: #888; text-transform: uppercase; margin-left: 12px; }\n  .main { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }\n\n  .lock-screen { max-width: 360px; margin: 80px auto; background: #fff; border: 1px solid #ddd; border-top: 3px solid #C9A84C; border-radius: 2px; padding: 36px; }\n  .lock-screen h2 { font-size: 15px; letter-spacing: 0.1em; margin-bottom: 20px; }\n  .lock-screen input { width: 100%; background: #fafafa; border: 1px solid #e0e0e0; border-radius: 1px; padding: 11px 14px; font-size: 14px; outline: none; margin-bottom: 12px; }\n  .lock-screen input:focus { border-color: #C9A84C; }\n  .lock-screen button { width: 100%; background: #1a1a1a; border: none; border-radius: 1px; padding: 12px; font-size: 12px; letter-spacing: 0.15em; color: #fff; text-transform: uppercase; cursor: pointer; }\n  .lock-screen button:hover { background: #C9A84C; }\n  .lock-msg { font-size: 11px; color: #E11D48; margin-top: 10px; text-align: center; display: none; }\n\n  .tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid #ddd; flex-wrap: wrap; }\n  .tab { padding: 10px 18px; font-size: 12px; letter-spacing: 0.08em; color: #888; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; }\n  .tab.active { color: #1a1a1a; border-bottom-color: #C9A84C; font-weight: 500; }\n  .tab-content { display: none; }\n  .tab-content.active { display: block; }\n\n  .panel { background: #fff; border: 1px solid #ddd; border-radius: 2px; padding: 24px; margin-bottom: 16px; overflow-x: auto; }\n  .panel h3 { font-size: 11px; letter-spacing: 0.15em; color: #C9A84C; text-transform: uppercase; margin-bottom: 16px; }\n\n  .asset-row { display: grid; grid-template-columns: 90px 1fr 1fr 140px; gap: 16px; align-items: start; padding: 16px 0; border-bottom: 1px solid #eee; }\n  .asset-row:last-child { border-bottom: none; }\n  .asset-row img { width: 90px; height: 90px; object-fit: cover; border-radius: 2px; border: 1px solid #eee; cursor: pointer; }\n  .asset-row .no-img { width: 90px; height: 90px; background: #f5f5f5; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #bbb; }\n  .asset-info .brand { font-size: 10px; letter-spacing: 0.15em; color: #C9A84C; text-transform: uppercase; }\n  .asset-info .model { font-size: 15px; margin: 2px 0; }\n  .asset-info .meta { font-size: 11px; color: #999; line-height: 1.6; }\n  .asset-actions { display: flex; flex-direction: column; gap: 6px; }\n  .btn-sm { padding: 8px; font-size: 11px; letter-spacing: 0.08em; border-radius: 1px; cursor: pointer; border: none; text-align: center; }\n  .btn-approve { background: #16A34A; color: #fff; }\n  .btn-approve:hover { background: #15803d; }\n  .btn-reject { background: #fff; border: 1px solid #FDA4AF; color: #E11D48; }\n  .btn-reject:hover { background: #FFF1F2; }\n  .empty-msg { text-align: center; padding: 40px; color: #aaa; font-size: 12px; }\n\n  .field { margin-bottom: 14px; }\n  .field label { display: block; font-size: 11px; letter-spacing: 0.1em; color: #999; text-transform: uppercase; margin-bottom: 6px; }\n  .field input, .field select, .field textarea { width: 100%; background: #fafafa; border: 1px solid #e0e0e0; border-radius: 1px; padding: 10px 12px; font-size: 13px; outline: none; font-family: inherit; }\n  .field input:focus, .field select:focus, .field textarea:focus { border-color: #C9A84C; background: #fff; }\n  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }\n  .field-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }\n  .btn-main { background: #C9A84C; border: none; border-radius: 1px; padding: 12px; font-size: 12px; letter-spacing: 0.15em; color: #fff; text-transform: uppercase; cursor: pointer; width: 100%; margin-top: 8px; }\n  .btn-main:hover { background: #b8943f; }\n  .msg-box { margin-top: 12px; padding: 10px 14px; border-radius: 1px; font-size: 12px; text-align: center; display: none; }\n  .msg-box.error { background: #FFF1F2; border: 1px solid #FDA4AF; color: #E11D48; }\n  .msg-box.success { background: #F0FDF4; border: 1px solid #86EFAC; color: #16A34A; }\n\n  .code-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 980px; }\n  .code-table th { text-align: left; padding: 8px; color: #999; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; border-bottom: 1px solid #eee; white-space: nowrap; }\n  .code-table td { padding: 10px 8px; border-bottom: 1px solid #f5f5f5; vertical-align: top; }\n  .status-chip { font-size: 10px; padding: 3px 8px; border-radius: 2px; }\n  .chip-미사용 { background: #FFF8E7; color: #8B6914; }\n  .chip-사용완료 { background: #F0FDF4; color: #16A34A; }\n\n  .all-asset-search { margin-bottom: 16px; width: 100%; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 1px; font-size: 13px; }\n  .status-tag { font-size: 10px; padding: 2px 8px; border-radius: 2px; }\n  .tag-대기중 { background: #FFF8E7; color: #8B6914; }\n  .tag-승인 { background: #F0FDF4; color: #16A34A; }\n  .tag-거절 { background: #FFF1F2; color: #E11D48; }\n  .tag-보완요책 { background: #FFF8E7; color: #8B6914; }\n  .tag-접수완료 { background: #FFF8E7; color: #8B6914; }\n  .tag-출고완료 { background: #F0FDF4; color: #16A34A; }\n  .tag-silver { background: #f0f0f0; color: #666; }\n  .tag-gold { background: #FFF8E7; color: #8B6914; }\n  .tag-platinum { background: #1a1a1a; color: #C9A84C; }\n\n  .stage-track { display: flex; gap: 4px; }\n  .stage-dot { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; border: 1px solid #ddd; background: #fafafa; color: #aaa; flex-shrink: 0; }\n  .stage-dot.done { background: #C9A84C; border-color: #C9A84C; color: #fff; }\n  .stage-dot:hover { border-color: #C9A84C; }\n  .stage-labels { display: flex; gap: 4px; margin-top: 4px; }\n  .stage-labels span { width: 30px; font-size: 8px; text-align: center; color: #bbb; }\n\n  .stage-list { display: flex; flex-direction: column; gap: 2px; min-width: 150px; }\n  .stage-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; padding: 4px 0; border-bottom: 1px solid #f5f5f5; }\n  .stage-row:last-child { border-bottom: none; }\n  .stage-row-check { display: flex; align-items: center; gap: 6px; cursor: pointer; color: #999; white-space: nowrap; }\n  .stage-row-check.done { color: #1a1a1a; font-weight: 500; }\n  .stage-dot-v { width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; border: 1px solid #ddd; background: #fafafa; color: #aaa; flex-shrink: 0; }\n  .stage-dot-v.done { background: #C9A84C; border-color: #C9A84C; color: #fff; }\n  .stage-row-date { display: flex; align-items: center; gap: 5px; color: #999; font-size: 10px; white-space: nowrap; }\n  .stage-row-date input[type=\"date\"] { font-size: 10px; padding: 2px 4px; border: 1px solid #C9A84C; border-radius: 1px; }\n  .stage-edit-link { font-size: 9px; color: #C9A84C; cursor: pointer; border: none; background: none; padding: 0; text-decoration: underline; }\n\n  .billing-edit { display: flex; gap: 4px; align-items: center; }\n  .billing-edit input { width: 90px; padding: 5px 6px; font-size: 11px; border: 1px solid #e0e0e0; border-radius: 1px; }\n  .billing-edit button { padding: 5px 8px; font-size: 10px; background: #1a1a1a; color: #fff; border: none; border-radius: 1px; cursor: pointer; }\n\n  .items-panel { background: #fafafa; border: 1px solid #eee; border-radius: 2px; padding: 16px; }\n  .items-table { width: 100%; font-size: 12px; margin-bottom: 12px; border-collapse: collapse; }\n  .items-table th { text-align: left; color: #999; font-size: 10px; padding: 4px; border-bottom: 1px solid #e5e5e5; }\n  .items-table td { padding: 6px 4px; border-bottom: 1px solid #f0f0f0; }\n  .items-table tr.total-row td { border-bottom: none; border-top: 2px solid #C9A84C; font-weight: 600; padding-top: 8px; }\n  .item-del-btn { padding: 3px 8px; font-size: 10px; background: #fff; border: 1px solid #FDA4AF; color: #E11D48; border-radius: 1px; cursor: pointer; }\n  .btn-items-toggle { background: #1a1a1a; color: #fff; }\n  .btn-apply-total { background: #C9A84C; color: #fff; width: 100%; padding: 9px; font-size: 11px; letter-spacing: 0.1em; border: none; border-radius: 1px; cursor: pointer; margin-top: 4px; }\n  .vendor-select-box { margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px dashed #ddd; }\n  .vendor-select-box label { display: block; font-size: 11px; color: #999; margin-bottom: 6px; }\n  .vendor-select-box select { width: 100%; background: #fff; border: 1px solid #e0e0e0; border-radius: 1px; padding: 9px 10px; font-size: 13px; }\n  .member-panel { background: #fafafa; border: 1px solid #eee; border-radius: 2px; padding: 16px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }\n  .member-panel .mp-box { background: #fff; border: 1px solid #e5e5e5; border-radius: 2px; padding: 12px; }\n  .member-panel .mp-box h5 { font-size: 11px; letter-spacing: 0.1em; color: #C9A84C; text-transform: uppercase; margin-bottom: 10px; }\n  .member-panel input, .member-panel select { width: 100%; padding: 7px 8px; font-size: 12px; border: 1px solid #e0e0e0; border-radius: 1px; margin-bottom: 6px; }\n  .member-panel button { width: 100%; padding: 8px; font-size: 11px; background: #1a1a1a; color: #fff; border: none; border-radius: 1px; cursor: pointer; }\n  .member-panel button:hover { background: #C9A84C; }\n  @media (max-width: 700px) {\n    .member-panel { grid-template-columns: 1fr; }\n  }\n\n  .archive-carousel-wrap { position: relative; max-width: 560px; margin: 0 auto; }\n  .archive-shot-area {\n    aspect-ratio: 4 / 3; background: linear-gradient(135deg, #E8E5DC, #D8D3C4); border-radius: 2px 2px 0 0;\n    display: flex; align-items: center; justify-content: center; color: #999; font-size: 12.5px; text-align: center;\n  }\n  .archive-card { border: 1px solid #ddd; border-radius: 2px; overflow: hidden; background: #fff; }\n  .archive-card-body { padding: 20px 22px 24px; }\n  .archive-card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }\n  .archive-yearmonth { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: #fff; background: #16233A; padding: 4px 10px; border-radius: 2px; }\n  .archive-index { font-size: 11px; color: #bbb; }\n  .archive-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }\n  .archive-memo { font-size: 13px; color: #666; line-height: 1.7; white-space: pre-line; }\n  .archive-nav-btn {\n    position: absolute; top: 35%; transform: translateY(-50%); width: 38px; height: 38px; border-radius: 50%;\n    background: #fff; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center;\n    cursor: pointer; font-size: 17px; color: #1a1a1a; box-shadow: 0 2px 8px rgba(0,0,0,0.08); z-index: 2; user-select: none;\n  }\n  .archive-nav-btn:hover { border-color: #C9A84C; color: #C9A84C; }\n  .archive-nav-btn.prev { left: -19px; }\n  .archive-nav-btn.next { right: -19px; }\n  .archive-nav-btn.disabled { opacity: 0.3; cursor: default; pointer-events: none; }\n  .archive-dots { display: flex; justify-content: center; gap: 7px; margin-top: 18px; }\n  .archive-dot { width: 7px; height: 7px; border-radius: 50%; background: #ddd; cursor: pointer; }\n  .archive-dot.active { background: #C9A84C; width: 20px; border-radius: 4px; }\n";
 document.head.appendChild(styleEl_aldosa_admin);
-
-document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n    <span class=\"logo\">ALDOSA</span><span class=\"badge\">Admin</span>\n    <a href=\"/faq\" target=\"_blank\" style=\"margin-left:auto; font-size:11px; letter-spacing:0.1em; color:#aaa; text-decoration:none;\">\uace0\uac1d\uc6a9 FAQ \ubcf4\uae30 \u2197</a>\n  </div>\n\n  <div id=\"lockScreen\" class=\"lock-screen\">\n    <h2>\uad00\ub9ac\uc790 \uc778\uc99d</h2>\n    <input type=\"password\" id=\"adminKeyInput\" placeholder=\"\uad00\ub9ac\uc790 \ud0a4 \uc785\ub825\" />\n    <button onclick=\"checkAdminKey()\">\uc811\uc18d</button>\n    <div class=\"lock-msg\" id=\"lockMsg\">\uad00\ub9ac\uc790 \ud0a4\uac00 \uc62c\ubc14\ub974\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4.</div>\n  </div>\n\n  <div id=\"adminMain\" class=\"main\" style=\"display:none;\">\n    <div class=\"tabs\">\n      <div class=\"tab active\" data-tab=\"pending\" onclick=\"switchTab('pending')\">\uc790\uc0b0 \uc2b9\uc778</div>\n      <div class=\"tab\" data-tab=\"as-new\" onclick=\"switchTab('as-new')\">AS \uc2e0\uaddc \uc811\uc218</div>\n      <div class=\"tab\" data-tab=\"as-manage\" onclick=\"switchTab('as-manage')\">AS \uc9c4\ud589 \uad00\ub9ac</div>\n      <div class=\"tab\" data-tab=\"codes\" onclick=\"switchTab('codes')\">\ud074\ub808\uc784 \ucf54\ub4dc</div>\n      <div class=\"tab\" data-tab=\"all\" onclick=\"switchTab('all')\">\uc804\uccb4 \uc790\uc0b0</div>\n      <div class=\"tab\" data-tab=\"members\" onclick=\"switchTab('members')\">\uba64\ubc84 \uad00\ub9ac</div>\n      <div class=\"tab\" data-tab=\"tips\" onclick=\"switchTab('tips')\">\uad00\ub9ac\uc790 TIP</div>\n      <div class=\"tab\" data-tab=\"store\" onclick=\"switchTab('store')\">\uc2a4\ud1a0\uc5b4 \uad00\ub9ac</div><div class=\"tab\" data-tab=\"quotes\" onclick=\"switchTab('quotes')\">\ud30c\ud2b8\ub108 \uacac\uc801</div><div class=\"tab\" data-tab=\"cancel\" onclick=\"switchTab('cancel')\">\uc8fc\ubb38\ucde8\uc18c \uc694\uccad</div><div class=\"tab\" data-tab=\"archive\" onclick=\"switchTab('archive')\">\uba54\uc778 \ubcc0\ucc9c\uc0ac</div><div class=\"tab\" data-tab=\"inquiries\" onclick=\"switchTab('inquiries')\">\ud30c\ud2b8\ub108 \ubb38\uc758</div><div class=\"tab\" data-tab=\"faq\" onclick=\"switchTab('faq')\">FAQ \uad00\ub9ac</div>\n    </div>\n\n    <div class=\"tab-content active\" id=\"tab-pending\">\n      <div class=\"panel\">\n        <h3>\uc2b9\uc778 \ub300\uae30\uc911\uc778 \uc790\uc0b0 (\uace0\uac1d \ubcf8\uc778 \ub4f1\ub85d\ubd84)</h3>\n        <div id=\"pendingList\"><div class=\"empty-msg\">\ubd88\ub7ec\uc624\ub294 \uc911...</div></div>\n      </div>\n    </div>\n\n    <div class=\"tab-content\" id=\"tab-as-new\">\n      <div class=\"panel\">\n        <h3>AS \uc2e0\uaddc \uc811\uc218</h3>\n        <div class=\"field\"><label>\uce74\ud14c\uace0\ub9ac</label><select id=\"as_category\" onchange=\"toggleAsCategoryFields()\"><option value=\"watch\">\uc2dc\uacc4</option><option value=\"jewelry\">\uc8fc\uc5bc\ub9ac</option></select></div>\n        <div class=\"field-row\">\n          <div class=\"field\"><label>OFR \uad00\ub9ac\ubc88\ud638</label><input type=\"text\" id=\"as_ofr\" placeholder=\"\uc608) 550011903\" /></div>\n          <div class=\"field\"><label>\uc811\uc218\uc77c (\uae30\ubcf8\uac12: \uc624\ub298, \uc9c1\uc811 \ubcc0\uacbd \uac00\ub2a5)</label><input type=\"date\" id=\"as_received_date\" /></div>\n        </div>\n        <div class=\"field\">\n          <label>\uc811\uc218 \uc810\ud3ec</label>\n          <select id=\"as_store\" onchange=\"loadStaffForStore()\">\n            <option value=\"\">\uc810\ud3ec \uc120\ud0dd</option>\n          </select>\n        </div>\n        <div class=\"field-row\">\n          <div class=\"field\"><label>\ub2f4\ub2f9\uc790</label><select id=\"as_staff\"><option value=\"\">\uc810\ud3ec\ub97c \uba3c\uc800 \uc120\ud0dd\ud558\uc138\uc694</option></select></div>\n          <div class=\"field\"><label>\uc758\ub8b0\uc778 \uc5f0\ub77d\ucc98 (\ub2f4\ub2f9\uc790 \uc544\ub2cc \uace0\uac1d \uc5f0\ub77d\ucc98)</label><input type=\"text\" id=\"as_intake_phone\" placeholder=\"010-0000-0000\" oninput=\"formatPhoneAdmin(this)\" maxlength=\"13\" /></div>\n        </div>\n        <div class=\"field\"><label>\uc758\ub8b0\uc778 \uc131\uba85</label><input type=\"text\" id=\"as_intake_name\" placeholder=\"\uace0\uac1d \uc774\ub984\" /></div>\n        <div class=\"field-row3\">\n          <div class=\"field\"><label>\ube0c\ub79c\ub4dc</label>\n            <select id=\"as_brand\" onchange=\"document.getElementById('as_brand_custom_wrap').style.display = (this.value === '\uae30\ud0c0') ? 'block' : 'none';\">\n              <option value=\"\">\ube0c\ub79c\ub4dc \uc120\ud0dd</option>\n              <option>A. Lange & S\u00f6hne</option>\n              <option>Audemars Piguet</option>\n              <option>Blancpain</option>\n              <option>Breguet</option>\n              <option>Breitling</option>\n              <option>Cartier</option>\n              <option>Hublot</option>\n              <option>IWC</option>\n              <option>Jaeger-LeCoultre</option>\n              <option>Omega</option>\n              <option>Panerai</option>\n              <option>Patek Philippe</option>\n              <option>Richard Mille</option>\n              <option>Rolex</option>\n              <option>TAG Heuer</option>\n              <option>Vacheron Constantin</option>\n              <option>\uae30\ud0c0</option>\n            </select>\n            <select id=\"as_brand_jewelry\" style=\"display:none;\" onchange=\"document.getElementById('as_brand_jewelry_custom_wrap').style.display = (this.value === '\uae30\ud0c0') ? 'block' : 'none';\">\n              <option value=\"\">\ube0c\ub79c\ub4dc \uc120\ud0dd</option>\n              <option>Cartier</option>\n              <option>Van Cleef & Arpels</option>\n              <option>Tiffany & Co.</option>\n              <option>Bulgari</option>\n              <option>Chanel</option>\n              <option>\uae30\ud0c0</option>\n            </select>\n            <div id=\"as_brand_jewelry_custom_wrap\" style=\"display:none; margin-top:6px;\">\n              <input type=\"text\" id=\"as_brand_jewelry_custom\" placeholder=\"\ube0c\ub79c\ub4dc\uba85 \uc9c1\uc811 \uc785\ub825\" />\n            </div>\n            <div id=\"as_brand_custom_wrap\" style=\"display:none; margin-top:6px;\">\n              <input type=\"text\" id=\"as_brand_custom\" placeholder=\"\ube0c\ub79c\ub4dc\uba85 \uc9c1\uc811 \uc785\ub825\" />\n            </div>\n          </div>\n          <div class=\"field\"><label>\ubaa8\ub378\uba85</label>\n            <input type=\"text\" id=\"as_model\" placeholder=\"\uc608) W69012Z4\" />\n            <label style=\"display:flex; align-items:center; gap:4px; font-size:10px; color:#999; margin-top:4px; cursor:pointer;\"><input type=\"checkbox\" id=\"as_model_pending\" onchange=\"document.getElementById('as_model').disabled=this.checked; if(this.checked) document.getElementById('as_model').value='';\" style=\"margin:0;\" /> \ucd94\ud6c4 \uae30\uc7ac</label>\n          </div>\n          <div class=\"field\"><label>\uc2dc\ub9ac\uc5bc</label>\n            <input type=\"text\" id=\"as_serial\" placeholder=\"\uc608) 759843ZX\" />\n            <label style=\"display:flex; align-items:center; gap:4px; font-size:10px; color:#999; margin-top:4px; cursor:pointer;\"><input type=\"checkbox\" id=\"as_serial_pending\" onchange=\"document.getElementById('as_serial').disabled=this.checked; if(this.checked) document.getElementById('as_serial').value='';\" style=\"margin:0;\" /> \ucd94\ud6c4 \uae30\uc7ac</label>\n          </div>\n        </div>\n        <div class=\"field\"><label>\uad6c\ub9e4\uc77c (\ud68c\uc6d0\uc774 \uc54c\ub824\uc900 \uacbd\uc6b0)</label><input type=\"date\" id=\"as_purchase_date\" /></div>\n        <div class=\"field\"><label>\uc811\uc218\uc2dc \uae30\uc7ac \uc99d\uc0c1</label><textarea id=\"as_symptom\" rows=\"2\" placeholder=\"\uc608) \ubc30\ud130\ub9ac \uad50\uccb4, \uc2dc\uac04 \uba48\ucda4, \uc624\ubc84\ud640 \uc810\uac80 \uc694\ub9dd\"></textarea></div>\n        <div class=\"field-row\">\n          <div class=\"field\"><label>\uacac\uc801 \uae08\uc561 (\uc6d0)</label><input type=\"number\" id=\"as_quote\" placeholder=\"0\" /></div>\n          <div class=\"field\"><label>\uc6b4\uc1a1 \ubc29\ubc95</label><input type=\"text\" id=\"as_shipping\" placeholder=\"\uc608) \uc6b0\uccb4\uad6d\" /></div>\n        </div>\n        <button class=\"btn-main\" onclick=\"handleCreateAS()\">AS \uc811\uc218 \ub4f1\ub85d</button>\n        <div class=\"msg-box\" id=\"asNewMsg\"></div>\n        <div id=\"asNewCodeResult\"></div>\n      </div>\n    </div>\n\n    <div class=\"tab-content\" id=\"tab-as-manage\">\n      <div class=\"panel\">\n        <h3>AS \uc9c4\ud589 \ud604\ud669</h3>\n        <div id=\"asManageList\"><div class=\"empty-msg\">\ubd88\ub7ec\uc624\ub294 \uc911...</div></div>\n      </div>\n    </div>\n\n    <div class=\"tab-content\" id=\"tab-codes\">\n      <div class=\"panel\">\n        <h3>\ucd9c\uace0\uc804 \ub4f1\ub85d\uc6a9 \ucf54\ub4dc \ub300\ub7c9\uc0dd\uc131 (\uc608: \uc8fc\uc5bc\ub9ac QR)</h3>\n        <div class=\"field-row3\">\n          <div class=\"field\" style=\"margin-bottom:0;\"><label>\uce74\ud14c\uace0\ub9ac</label><select id=\"bulk_category\"><option value=\"jewelry\">\uc8fc\uc5bc\ub9ac</option><option value=\"watch\">\uc2dc\uacc4</option></select></div>\n          <div class=\"field\" style=\"margin-bottom:0;\"><label>\ube0c\ub79c\ub4dc</label><input type=\"text\" id=\"bulk_brand\" placeholder=\"\uc608) Cartier\" /></div>\n          <div class=\"field\" style=\"margin-bottom:0;\"><label>\uc81c\ud488\uba85</label><input type=\"text\" id=\"bulk_product\" placeholder=\"\uc608) \ub7ec\ube0c \ube0c\ub808\uc774\uc2ac\ub9bf\" /></div>\n        </div>\n        <div class=\"field\" style=\"max-width:160px;\"><label>\uc0dd\uc131 \uac1c\uc218</label><input type=\"number\" id=\"bulk_count\" placeholder=\"\uc608) 100\" min=\"1\" max=\"1000\" /></div>\n        <button class=\"btn-main\" onclick=\"handleBulkGenerate()\">\ucf54\ub4dc \ub300\ub7c9\uc0dd\uc131</button>\n        <div class=\"msg-box\" id=\"bulkMsg\"></div>\n        <div id=\"bulkResultArea\"></div>\n      </div>\n\n      <div class=\"panel\">\n        <h3>\ubc1c\uae09\ub41c \ud074\ub808\uc784 \ucf54\ub4dc \ubaa9\ub85d</h3>\n        <input type=\"text\" class=\"all-asset-search\" id=\"codeSearch\" placeholder=\"\ucf54\ub4dc, \uc811\uc218\ubc88\ud638, \uc758\ub8b0\uc778, \uc5f0\ub77d\ucc98, \ube0c\ub79c\ub4dc/\ubaa8\ub378\ub85c \uac80\uc0c9\" oninput=\"renderCodes()\" />\n        <div id=\"codesList\"><div class=\"empty-msg\">\ubd88\ub7ec\uc624\ub294 \uc911...</div></div>\n      </div>\n    </div>\n\n    <div class=\"tab-content\" id=\"tab-all\">\n      <div class=\"panel\">\n        <h3>\uc804\uccb4 \uc790\uc0b0 (\ud68c\uc6d0 \ub9e4\uce6d \uc5ec\ubd80 \ud3ec\ud568)</h3>\n        <input type=\"text\" class=\"all-asset-search\" id=\"assetSearch\" placeholder=\"\uc2dc\ub9ac\uc5bc, \ube0c\ub79c\ub4dc, \ubaa8\ub378\ub85c \uac80\uc0c9\" oninput=\"renderAllAssets()\" />\n        <div id=\"allAssetsList\"><div class=\"empty-msg\">\ubd88\ub7ec\uc624\ub294 \uc911...</div></div>\n      </div>\n    </div>\n\n    <div class=\"tab-content\" id=\"tab-tips\">\n      <div class=\"panel\">\n        <h3>\uad00\ub9ac\uc790 TIP / FAQ</h3>\n        <div style=\"font-size:13px; line-height:1.8; color:#333;\">\n\n          <div style=\"margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #eee;\">\n            <div style=\"font-weight:600; color:#C9A84C; margin-bottom:6px;\">Q. \uc2dc\ub9ac\uc5bc\uc744 \uad6c\uae00\uc2dc\ud2b8\uc5d0\uc11c \uc9c1\uc811 \uc218\uc815\ud574\ub3c4 \ub418\ub098\uc694?</div>\n            \uc2dc\ub9ac\uc5bc\uc740 <b>Assets, AS_Requests, Claim_Codes, Provenance</b> 4\uac1c \uc2dc\ud2b8\uc5d0 \ud769\uc5b4\uc838 \uc800\uc7a5\ub429\ub2c8\ub2e4. \ud55c \uacf3\ub9cc \uace0\uce58\uba74 \ud2b9\ud788 Provenance(\uc774\ub824)\uac00 \ub04a\uc5b4\uc9d1\ub2c8\ub2e4.<br>\n            \uac01 \uc2dc\ud2b8\uc5d0\uc11c <b>Ctrl+H(\ucc3e\uae30/\ubc14\uafb8\uae30)</b> \u2192 \"\uc804\uccb4 \uc140 \ub0b4\uc6a9 \uc77c\uce58\" \uccb4\ud06c \u2192 \uc61b \uc2dc\ub9ac\uc5bc\u2192\uc0c8 \uc2dc\ub9ac\uc5bc\ub85c 4\uacf3 \ubaa8\ub450 \ub3d9\uc77c\ud558\uac8c \ubc14\uafd4\uc8fc\uc138\uc694.\n          </div>\n\n          <div style=\"margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #eee;\">\n            <div style=\"font-weight:600; color:#C9A84C; margin-bottom:6px;\">Q. \ubaa8\ub378\uba85/\uc2dc\ub9ac\uc5bc\uc744 \ud604\uc7a5\uc5d0\uc11c \ud655\uc778 \ubabb\ud588\uc744 \ub54c\ub294?</div>\n            \"\ubbf8\uae30\uc7ac\", \"\ubbf8\uc0c1\" \uac19\uc740 \ud14d\uc2a4\ud2b8\ub97c \uc9c1\uc811 \uc785\ub825\ud558\uc9c0 \ub9c8\uc138\uc694 (\uc11c\ub85c \ub2e4\ub978 \uac74\uc774 \uac19\uc740 \ud14d\uc2a4\ud2b8\ub97c \uc4f0\uba74 \ud074\ub808\uc784\ucf54\ub4dc\uac00 \uc5c9\ud0b5\ub2c8\ub2e4). \ub300\uc2e0 \uc606\uc758 <b>\"\ucd94\ud6c4 \uae30\uc7ac\" \uccb4\ud06c\ubc15\uc2a4</b>\ub97c \uc0ac\uc6a9\ud558\uc138\uc694. \ud074\ub808\uc784 \ucf54\ub4dc\ub294 \uc2dc\ub9ac\uc5bc \uc5c6\uc774\ub3c4 \uc989\uc2dc \ubc1c\uae09\ub429\ub2c8\ub2e4.\n          </div>\n\n          <div style=\"margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #eee;\">\n            <div style=\"font-weight:600; color:#C9A84C; margin-bottom:6px;\">Q. \uc2dc\ub9ac\uc5bc\uc744 \ub098\uc911\uc5d0 \uc54c\uac8c \ub418\uba74 \uc5b4\ub5bb\uac8c \ud558\ub098\uc694?</div>\n            \"AS \uc9c4\ud589 \uad00\ub9ac\"\uc5d0\uc11c \ud574\ub2f9 \uac74\uc758 <b>\"\uc2dc\ub9ac\uc5bc \ubcf4\uc644\"</b> \ubc84\ud2bc \ud074\ub9ad \u2192 \uc2dc\ub9ac\uc5bc \uc785\ub825 + \uc0ac\uc9c4 \ucca8\ubd80(\uc120\ud0dd) \u2192 \ud655\uc815. \uc790\uc0b0\uc774 \uc790\ub3d9 \uc0dd\uc131\ub418\uace0, \uace0\uac1d\uc774 \uc774\ubbf8 \ucf54\ub4dc\ub97c \uc785\ub825\ud574 \uac00\uc785\uae4c\uc9c0 \ud588\ub2e4\uba74 \uc790\uc0b0\uae4c\uc9c0 \uc790\ub3d9 \uc5f0\uacb0\ub429\ub2c8\ub2e4.\n          </div>\n\n          <div style=\"margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #eee;\">\n            <div style=\"font-weight:600; color:#C9A84C; margin-bottom:6px;\">Q. \ubc14\uc6b0\ucc98\ub97c \uc798\ubabb \ubc1c\uae09\ud588\uc5b4\uc694. \ucde8\uc18c\ud560 \uc218 \uc788\ub098\uc694?</div>\n            \"\uba64\ubc84 \uad00\ub9ac\"\uc5d0\uc11c \ud574\ub2f9 \ud68c\uc6d0\uc758 \ubc14\uc6b0\ucc98 \ubaa9\ub85d \u2192 <b>\"\uc0ad\uc81c\"</b> \ubc84\ud2bc (\ubbf8\uc0ac\uc6a9/\uc0ac\uc6a9\uc644\ub8cc/\uae30\ud55c\ub9cc\uae30 \uc0c1\ud0dc \ubb34\uad00\ud558\uac8c \uc0ad\uc81c \uac00\ub2a5, \uae30\ub85d\uc774 \uc644\uc804\ud788 \uc0ac\ub77c\uc9d1\ub2c8\ub2e4). \ubc1c\uae09 \uc2dc \uc0ac\uc6a9\uae30\ud55c\uc740 6\uac1c\uc6d4/1\ub144 \uc911 \uc120\ud0dd\ud560 \uc218 \uc788\uc5b4\uc694.\n          </div>\n\n          <div style=\"margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #eee;\">\n            <div style=\"font-weight:600; color:#C9A84C; margin-bottom:6px;\">Q. \ucd9c\uace0 \ucc98\ub9ac\ub97c \ucde8\uc18c\ud558\uace0 \ub2e4\uc2dc \uccb4\ud06c\ud558\uba74 \uc774\ub824\uc774 \uc911\ubcf5\ub418\ub098\uc694?</div>\n            \uc544\ub2c8\uc694. \uac19\uc740 AS \uac74\uc758 \"\ucd9c\uace0 \uc644\ub8cc\" \uc774\ub824\uc740 \uc0c8\ub85c \uc313\uc774\uc9c0 \uc54a\uace0 \uadf8 \uc790\ub9ac\uc5d0\uc11c \uac31\uc2e0(upsert)\ub429\ub2c8\ub2e4. \ud56d\ubaa9/\uc218\ub9ac\ucc98\ub97c \ub098\uc911\uc5d0 \ubc14\uafd4\ub3c4 \uc548\uc804\ud569\ub2c8\ub2e4.\n          </div>\n\n          <div style=\"margin-bottom:0;\">\n            <div style=\"font-weight:600; color:#C9A84C; margin-bottom:6px;\">Q. \ud68c\uc6d0 \ub4f1\uae09/\ub9c8\uc77c\ub9ac\uc9c0\ub294 \uc5b8\uc81c \ubc14\ub00c\ub098\uc694?</div>\n            \"\uba64\ubc84 \uad00\ub9ac\"\uc5d0\uc11c \uacb0\uc81c\ub97c \uc218\ub3d9 \uae30\ub85d(adminRecordPayment)\ud558\uba74 <b>\uc989\uc2dc</b> \ub204\uc801\uc2e4\uc801\uc774 \uac31\uc2e0\ub418\uace0, \uadf8 \uae30\uc900\uc73c\ub85c \ub4f1\uae09(\uc2e4\ubc84/\uace8\ub4dc/\ud50c\ub798\ud2f0\ub118)\uc774 \uc989\uc2dc \uc7ac\uc0b0\uc815\ub418\uba70, \uadf8 \ub4f1\uae09 \uc801\ub9bd\ub960\ub9cc\ud07c \ub9c8\uc77c\ub9ac\uc9c0\uac00 \ubc14\ub85c \uc801\ub9bd\ub429\ub2c8\ub2e4.\n          </div>\n\n          <div style=\"margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #eee;\">\n            <div style=\"font-weight:600; color:#C9A84C; margin-bottom:6px;\">Q. \uc54c\ub3c4\uc0ac \ucf54\ub4dc(AWR/AJR/AWS/AJS)\ub294 \uac01\uac01 \ubb34\uc2a8 \ub73b\uc778\uac00\uc694?</div>\n            \ucf54\ub4dc \ud615\uc2dd: <b>A + \uce74\ud14c\uace0\ub9ac(1\uc790) + \uc6a9\ub3c4(1\uc790) + \ubc1c\uae09\uc5f0\uc6d4(4\uc790) + \ub79c\ub364(4\uc790)</b><br><br>\n            \uce74\ud14c\uace0\ub9ac \u2014 W = \uc2dc\uacc4(Watch), J = \uc8fc\uc5bc\ub9ac(Jewelry)<br>\n            \uc6a9\ub3c4 \u2014 R = \ub4f1\ub85d(Register, \uc2e0\uaddc \uc790\uc0b0 \ub4f1\ub85d\uc6a9), S = AS\uc11c\ube44\uc2a4(Service, AS \uc811\uc218 \ud655\uc778/\uc5f0\uacb0\uc6a9)<br><br>\n            \uc608\uc2dc: <b>AWS2608K7Q1</b> = \uc2dc\uacc4 \u00b7 AS\uc11c\ube44\uc2a4 \u00b7 2026\ub144 8\uc6d4 \ubc1c\uae09<br>\n            \u203b \uc0c8 \uce74\ud14c\uace0\ub9ac(\uc608: \uc545\uae30 \ub4f1)\uac00 \ucd94\uac00\ub418\uba74 Code.gs\uc758 generateClaimCode \ud568\uc218\uc640 \uc774 \uc124\uba85\ub3c4 \ud568\uaed8 \uc5c5\ub370\uc774\ud2b8\ud574\uc57c \ud569\ub2c8\ub2e4.\n          </div>\n\n          <div style=\"margin-bottom:0;\">\n            <div style=\"font-weight:600; color:#C9A84C; margin-bottom:6px;\">Q. admin.js\ub97c \uc218\uc815\ud558\uba74 \uc5b4\ub5a4 \uc808\ucc28\ub85c \ubc18\uc601\ud558\ub098\uc694?</div>\n            admin.js\ub294 GitHub \ub808\ud3ec\uc5d0\uc11c jsDelivr CDN(\ucee4\ubc0b \ud574\uc2dc \uace0\uc815)\uc73c\ub85c \ubd88\ub7ec\uc624\ub294 \uad6c\uc870\uc785\ub2c8\ub2e4. \uc218\uc815\ud560 \ub54c\ub9c8\ub2e4 \uc544\ub798 \uc808\ucc28\uac00 \ud544\uc694\ud569\ub2c8\ub2e4.<br><br>\n            1) \ub85c\uceec \uc800\uc7a5\uc18c \ud3f4\ub354\ub85c \uc774\ub3d9 \ud6c4 \ud30c\uc77c \uc218\uc815<br>\n            2) <code>git add admin.js</code><br>\n            3) <code>git commit -m \"\uc218\uc815 \ub0b4\uc6a9\"</code><br>\n            4) <code>git push origin main</code><br>\n            5) <code>git log -1 --format=\"%H\"</code> \ub85c \uc0c8 \ucee4\ubc0b \ud574\uc2dc \ud655\uc778<br>\n            6) Framer\uc758 admin.js &lt;script src=\"...\"&gt; URL\uc5d0\uc11c <b>@\ucee4\ubc0b\ud574\uc2dc</b> \ubd80\ubd84\uc744 \uc0c8 \ud574\uc2dc\ub85c \uad50\uccb4<br><br>\n            \u203b jsDelivr\uc740 <b>@main</b>(\ube0c\ub79c\uce58\uba85) \uae30\uc900\uc73c\ub85c \ubd88\ub7ec\uc624\uba74 \uce90\uc2dc\uac00 \uc624\ub798 \ub0a8\uc544 \uc218\uc815\uc774 \ubc18\uc601 \uc548 \ub418\ub294 \ubb38\uc81c\uac00 \uc788\uc5b4, \ubc18\ub4dc\uc2dc \ucee4\ubc0b \ud574\uc2dc\ub85c \uace0\uc815\ud574\uc11c \uc501\ub2c8\ub2e4.\n          </div>\n\n\n        </div>\n      </div>\n    </div>\n\n    <div class=\"tab-content\" id=\"tab-members\">\n      <div class=\"panel\">\n        <h3>\uba64\ubc84 \uad00\ub9ac</h3>\n        <input type=\"text\" class=\"all-asset-search\" id=\"memberSearch\" placeholder=\"\uc774\ub984, \uc774\uba54\uc77c, \uc5f0\ub77d\ucc98\ub85c \uac80\uc0c9\" oninput=\"renderMembers()\" />\n        <div id=\"membersList\"><div class=\"empty-msg\">\ubd88\ub7ec\uc624\ub294 \uc911...</div></div>\n      </div>\n    </div>\n\n    <div class=\"tab-content\" id=\"tab-store\">\n      <div class=\"panel\">\n        <h3>\uc0c1\ud488 \uad00\ub9ac</h3>\n        <button class=\"btn-main\" style=\"margin-top:0; margin-bottom:16px;\" onclick=\"toggleProductForm()\">+ \uc0c8 \uc0c1\ud488 \ub4f1\ub85d</button>\n        <div id=\"productFormArea\"></div>\n        <div id=\"productsList\"><div class=\"empty-msg\">\ubd88\ub7ec\uc624\ub294 \uc911...</div></div>\n      </div>\n      <div class=\"panel\">\n        <h3>\uc8fc\ubb38 \uad00\ub9ac (\uc804\uccb4 \u2014 \uacb0\uc81c\ud655\uc778~\ubc30\uc1a1 \ud1b5\ud569)</h3>\n        <div id=\"activeOrdersList\"><div class=\"empty-msg\">\ubd88\ub7ec\uc624\ub294 \uc911...</div></div>\n      </div>\n    </div>\n\n    <div class=\"tab-content\" id=\"tab-quotes\">\n      <div class=\"panel\">\n        <h3>\ud30c\ud2b8\ub108 \uacac\uc801 \ud655\uc815 \/ \ub204\uc801 \uc870\ud68c</h3>\n        <div id=\"quotesList\"><div class=\"empty-msg\">\ubd88\ub7ec\uc624\ub294 \uc911...</div></div>\n      </div>\n    </div>\n\n    <div class=\"tab-content\" id=\"tab-cancel\">\n      <div class=\"panel\">\n        <h3>\uc8fc\ubb38 \ucde8\uc18c \uc694\uccad \uad00\ub9ac</h3>\n        <div id=\"cancelRequestsList\"><div class=\"empty-msg\">\ubd88\ub7ec\uc624\ub294 \uc911...</div></div>\n      </div>\n      <div class=\"panel\">\n        <h3>\ucde8\uc18c \ucc98\ub9ac \uc774\ub825 (\ucd5c\uadfc 30\uac74)</h3>\n        <div id=\"cancelHistoryList\"><div class=\"empty-msg\">\ubd88\ub7ec\uc624\ub294 \uc911...</div></div>\n      </div>\n    </div>\n\n    <div class=\"tab-content\" id=\"tab-archive\">\n      <div class=\"panel\">\n        <h3>\uba54\uc778 \ud398\uc774\uc9c0 \ubcc0\ucc9c\uc0ac</h3>\n        <div id=\"archiveCarouselArea\"><div class=\"empty-msg\">\ubd88\ub7ec\uc624\ub294 \uc911...</div></div>\n      </div>\n    </div>\n\n    <div class=\"tab-content\" id=\"tab-inquiries\">\n      <div class=\"panel\">\n        <h3>\ud30c\ud2b8\ub108 \ub3c4\uc785 \ubb38\uc758</h3>\n        <div id=\"inquiriesList\"><div class=\"empty-msg\">\ubd88\ub7ec\uc624\ub294 \uc911...</div></div>\n      </div>\n    </div>\n\n    <div class=\"tab-content\" id=\"tab-faq\">\n      <div class=\"panel\">\n        <h3>FAQ \uad00\ub9ac</h3>\n        <button class=\"btn-main\" style=\"margin-top:0; margin-bottom:16px;\" onclick=\"toggleFaqForm()\">+ \uc0c8 FAQ \ub4f1\ub85d</button>\n        <div id=\"faqFormArea\"></div>\n        <div id=\"faqList\"><div class=\"empty-msg\">\ubd88\ub7ec\uc624\ub294 \uc911...</div></div>\n      </div>\n    </div>\n  </div>";
-
-
+document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n    <span class=\"logo\">ALDOSA</span><span class=\"badge\">Admin</span>\n    <a href=\"/faq\" target=\"_blank\" style=\"margin-left:auto; font-size:11px; letter-spacing:0.1em; color:#aaa; text-decoration:none;\">고객용 FAQ 보기 ↗</a>\n  </div>\n\n  <div id=\"lockScreen\" class=\"lock-screen\">\n    <h2>관리자 인증</h2>\n    <input type=\"password\" id=\"adminKeyInput\" placeholder=\"관리자 키 입력\" />\n    <button onclick=\"checkAdminKey()\">접속</button>\n    <div class=\"lock-msg\" id=\"lockMsg\">관리자 키가 올바르지 않습니다.</div>\n  </div>\n\n  <div id=\"adminMain\" class=\"main\" style=\"display:none;\">\n    <div class=\"tabs\">\n      <div class=\"tab active\" data-tab=\"pending\" onclick=\"switchTab('pending')\">자산 승인</div>\n      <div class=\"tab\" data-tab=\"as-new\" onclick=\"switchTab('as-new')\">AS 신규 접수</div>\n      <div class=\"tab\" data-tab=\"as-manage\" onclick=\"switchTab('as-manage')\">AS 진행 관리</div>\n      <div class=\"tab\" data-tab=\"codes\" onclick=\"switchTab('codes')\">클레임 코드</div>\n      <div class=\"tab\" data-tab=\"all\" onclick=\"switchTab('all')\">전체 자산</div>\n      <div class=\"tab\" data-tab=\"members\" onclick=\"switchTab('members')\">멤버 관리</div>\n      <div class=\"tab\" data-tab=\"tips\" onclick=\"switchTab('tips')\">관리자 TIP</div>\n      <div class=\"tab\" data-tab=\"store\" onclick=\"switchTab('store')\">스토어 관리</div><div class=\"tab\" data-tab=\"quotes\" onclick=\"switchTab('quotes')\">파트너 견적</div><div class=\"tab\" data-tab=\"cancel\" onclick=\"switchTab('cancel')\">주문취소 요청</div><div class=\"tab\" data-tab=\"archive\" onclick=\"switchTab('archive')\">메인 변천사</div><div class=\"tab\" data-tab=\"inquiries\" onclick=\"switchTab('inquiries')\">파트너 문의</div><div class=\"tab\" data-tab=\"faq\" onclick=\"switchTab('faq')\">FAQ 관리</div>\n    </div>\n\n    <div class=\"tab-content active\" id=\"tab-pending\">\n      <div class=\"panel\">\n        <h3>승인 대기중인 자산 (고객 본인 등록분)</h3>\n        <div id=\"pendingList\"><div class=\"empty-msg\">불러오는 중...</div></div>\n      </div>\n    </div>\n\n    <div class=\"tab-content\" id=\"tab-as-new\">\n      <div class=\"panel\">\n        <h3>AS 신규 접수</h3>\n        <div class=\"field\"><label>카테고리</label><select id=\"as_category\" onchange=\"toggleAsCategoryFields()\"><option value=\"watch\">시계</option><option value=\"jewelry\">주얼리</option></select></div>\n        <div class=\"field-row\">\n          <div class=\"field\"><label>OFR 관리번호</label><input type=\"text\" id=\"as_ofr\" placeholder=\"예) 550011903\" /></div>\n          <div class=\"field\"><label>접수일 (기본값: 오늘, 직접 변경 가능)</label><input type=\"date\" id=\"as_received_date\" /></div>\n        </div>\n        <div class=\"field\">\n          <label>접수 점포</label>\n          <select id=\"as_store\" onchange=\"loadStaffForStore()\">\n            <option value=\"\">점포 선택</option>\n          </select>\n        </div>\n        <div class=\"field-row\">\n          <div class=\"field\"><label>담당자</label><select id=\"as_staff\"><option value=\"\">점포를 먼저 선택하세요</option></select></div>\n          <div class=\"field\"><label>의뢰인 연락처 (담당자 아닌 고객 연락처)</label><input type=\"text\" id=\"as_intake_phone\" placeholder=\"010-0000-0000\" oninput=\"formatPhoneAdmin(this)\" maxlength=\"13\" /></div>\n        </div>\n        <div class=\"field\"><label>의뢰인 성명</label><input type=\"text\" id=\"as_intake_name\" placeholder=\"고객 이름\" /></div>\n        <div class=\"field-row3\">\n          <div class=\"field\"><label>브랜드</label>\n            <select id=\"as_brand\" onchange=\"document.getElementById('as_brand_custom_wrap').style.display = (this.value === '기타') ? 'block' : 'none';\">\n              <option value=\"\">브랜드 선택</option>\n              <option>A. Lange & Söhne</option>\n              <option>Audemars Piguet</option>\n              <option>Blancpain</option>\n              <option>Breguet</option>\n              <option>Breitling</option>\n              <option>Cartier</option>\n              <option>Hublot</option>\n              <option>IWC</option>\n              <option>Jaeger-LeCoultre</option>\n              <option>Omega</option>\n              <option>Panerai</option>\n              <option>Patek Philippe</option>\n              <option>Richard Mille</option>\n              <option>Rolex</option>\n              <option>TAG Heuer</option>\n              <option>Vacheron Constantin</option>\n              <option>기타</option>\n            </select>\n            <select id=\"as_brand_jewelry\" style=\"display:none;\" onchange=\"document.getElementById('as_brand_jewelry_custom_wrap').style.display = (this.value === '기타') ? 'block' : 'none';\">\n              <option value=\"\">브랜드 선택</option>\n              <option>Cartier</option>\n              <option>Van Cleef & Arpels</option>\n              <option>Tiffany & Co.</option>\n              <option>Bulgari</option>\n              <option>Chanel</option>\n              <option>기타</option>\n            </select>\n            <div id=\"as_brand_jewelry_custom_wrap\" style=\"display:none; margin-top:6px;\">\n              <input type=\"text\" id=\"as_brand_jewelry_custom\" placeholder=\"브랜드명 직접 입력\" />\n            </div>\n            <div id=\"as_brand_custom_wrap\" style=\"display:none; margin-top:6px;\">\n              <input type=\"text\" id=\"as_brand_custom\" placeholder=\"브랜드명 직접 입력\" />\n            </div>\n          </div>\n          <div class=\"field\"><label>모델명</label>\n            <input type=\"text\" id=\"as_model\" placeholder=\"예) W69012Z4\" />\n            <label style=\"display:flex; align-items:center; gap:4px; font-size:10px; color:#999; margin-top:4px; cursor:pointer;\"><input type=\"checkbox\" id=\"as_model_pending\" onchange=\"document.getElementById('as_model').disabled=this.checked; if(this.checked) document.getElementById('as_model').value='';\" style=\"margin:0;\" /> 추후 기재</label>\n          </div>\n          <div class=\"field\"><label>시리얼</label>\n            <input type=\"text\" id=\"as_serial\" placeholder=\"예) 759843ZX\" />\n            <label style=\"display:flex; align-items:center; gap:4px; font-size:10px; color:#999; margin-top:4px; cursor:pointer;\"><input type=\"checkbox\" id=\"as_serial_pending\" onchange=\"document.getElementById('as_serial').disabled=this.checked; if(this.checked) document.getElementById('as_serial').value='';\" style=\"margin:0;\" /> 추후 기재</label>\n          </div>\n        </div>\n        <div class=\"field\"><label>구매일 (회원이 알려준 경우)</label><input type=\"date\" id=\"as_purchase_date\" /></div>\n        <div class=\"field\"><label>접수시 기재 증상</label><textarea id=\"as_symptom\" rows=\"2\" placeholder=\"예) 배터리 교체, 시간 멈춤, 오버홀 점검 요망\"></textarea></div>\n        <div class=\"field-row\">\n          <div class=\"field\"><label>견적 금액 (원)</label><input type=\"number\" id=\"as_quote\" placeholder=\"0\" /></div>\n          <div class=\"field\"><label>운송 방법</label><input type=\"text\" id=\"as_shipping\" placeholder=\"예) 우체국\" /></div>\n        </div>\n        <button class=\"btn-main\" onclick=\"handleCreateAS()\">AS 접수 등록</button>\n        <div class=\"msg-box\" id=\"asNewMsg\"></div>\n        <div id=\"asNewCodeResult\"></div>\n      </div>\n    </div>\n\n    <div class=\"tab-content\" id=\"tab-as-manage\">\n      <div class=\"panel\">\n        <h3>AS 진행 현황</h3>\n        <div id=\"asManageList\"><div class=\"empty-msg\">불러오는 중...</div></div>\n      </div>\n    </div>\n\n    <div class=\"tab-content\" id=\"tab-codes\">\n      <div class=\"panel\">\n        <h3>출고전 등록용 코드 대량생성 (예: 주얼리 QR)</h3>\n        <div class=\"field-row3\">\n          <div class=\"field\" style=\"margin-bottom:0;\"><label>카테고리</label><select id=\"bulk_category\"><option value=\"jewelry\">주얼리</option><option value=\"watch\">시계</option></select></div>\n          <div class=\"field\" style=\"margin-bottom:0;\"><label>브랜드</label><input type=\"text\" id=\"bulk_brand\" placeholder=\"예) Cartier\" /></div>\n          <div class=\"field\" style=\"margin-bottom:0;\"><label>제품명</label><input type=\"text\" id=\"bulk_product\" placeholder=\"예) 러브 브레이슬릿\" /></div>\n        </div>\n        <div class=\"field\" style=\"max-width:160px;\"><label>생성 개수</label><input type=\"number\" id=\"bulk_count\" placeholder=\"예) 100\" min=\"1\" max=\"1000\" /></div>\n        <button class=\"btn-main\" onclick=\"handleBulkGenerate()\">코드 대량생성</button>\n        <div class=\"msg-box\" id=\"bulkMsg\"></div>\n        <div id=\"bulkResultArea\"></div>\n      </div>\n\n      <div class=\"panel\">\n        <h3>발급된 클레임 코드 목록</h3>\n        <input type=\"text\" class=\"all-asset-search\" id=\"codeSearch\" placeholder=\"코드, 접수번호, 의뢰인, 연락처, 브랜드/모델로 검색\" oninput=\"renderCodes()\" />\n        <div id=\"codesList\"><div class=\"empty-msg\">불러오는 중...</div></div>\n      </div>\n    </div>\n\n    <div class=\"tab-content\" id=\"tab-all\">\n      <div class=\"panel\">\n        <h3>전체 자산 (회원 매칭 여부 포함)</h3>\n        <input type=\"text\" class=\"all-asset-search\" id=\"assetSearch\" placeholder=\"시리얼, 브랜드, 모델로 검색\" oninput=\"renderAllAssets()\" />\n        <div id=\"allAssetsList\"><div class=\"empty-msg\">불러오는 중...</div></div>\n      </div>\n    </div>\n\n    <div class=\"tab-content\" id=\"tab-tips\">\n      <div class=\"panel\">\n        <h3>관리자 TIP / FAQ</h3>\n        <div style=\"font-size:13px; line-height:1.8; color:#333;\">\n\n          <div style=\"margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #eee;\">\n            <div style=\"font-weight:600; color:#C9A84C; margin-bottom:6px;\">Q. 시리얼을 구글시트에서 직접 수정해도 되나요?</div>\n            시리얼은 <b>Assets, AS_Requests, Claim_Codes, Provenance</b> 4개 시트에 흩어져 저장됩니다. 한 곳만 고치면 특히 Provenance(이려)가 끊어집니다.<br>\n            각 시트에서 <b>Ctrl+H(찾기/바꾸기)</b> → \"전체 셀 내용 일치\" 체크 → 옛 시리얼→새 시리얼로 4곳 모두 동일하게 바꿔주세요.\n          </div>\n\n          <div style=\"margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #eee;\">\n            <div style=\"font-weight:600; color:#C9A84C; margin-bottom:6px;\">Q. 모델명/시리얼을 현장에서 확인 못했을 때는?</div>\n            \"미기재\", \"미상\" 같은 텍스트를 직접 입력하지 마세요 (서로 다른 건이 같은 텍스트를 쓰면 클레임코드가 엉킵니다). 대신 옆의 <b>\"추후 기재\" 체크박스</b>를 사용하세요. 클레임 코드는 시리얼 없이도 즉시 발급됩니다.\n          </div>\n\n          <div style=\"margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #eee;\">\n            <div style=\"font-weight:600; color:#C9A84C; margin-bottom:6px;\">Q. 시리얼을 나중에 알게 되면 어떻게 하나요?</div>\n            \"AS 진행 관리\"에서 해당 건의 <b>\"시리얼 보완\"</b> 버튼 클릭 → 시리얼 입력 + 사진 첨부(선택) → 확정. 자산이 자동 생성되고, 고객이 이미 코드를 입력해 가입까지 했다면 자산까지 자동 연결됩니다.\n          </div>\n\n          <div style=\"margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #eee;\">\n            <div style=\"font-weight:600; color:#C9A84C; margin-bottom:6px;\">Q. 바우처를 잘못 발급했어요. 취소할 수 있나요?</div>\n            \"멤버 관리\"에서 해당 회원의 바우처 목록 → <b>\"삭제\"</b> 버튼 (미사용/사용완료/기한만기 상태 무관하게 삭제 가능, 기록이 완전히 사라집니다). 발급 시 사용기한은 6개월/1년 중 선택할 수 있어요.\n          </div>\n\n          <div style=\"margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #eee;\">\n            <div style=\"font-weight:600; color:#C9A84C; margin-bottom:6px;\">Q. 출고 처리를 취소하고 다시 체크하면 이려이 중복되나요?</div>\n            아니요. 같은 AS 건의 \"출고 완료\" 이려은 새로 쌓이지 않고 그 자리에서 갱신(upsert)됩니다. 항목/수리처를 나중에 바꿔도 안전합니다.\n          </div>\n\n          <div style=\"margin-bottom:0;\">\n            <div style=\"font-weight:600; color:#C9A84C; margin-bottom:6px;\">Q. 회원 등급/마일리지는 언제 바뀌나요?</div>\n            \"멤버 관리\"에서 결제를 수동 기록(adminRecordPayment)하면 <b>즉시</b> 누적실적이 갱신되고, 그 기준으로 등급(실버/골드/플래티넘)이 즉시 재산정되며, 그 등급 적립률만큼 마일리지가 바로 적립됩니다.\n          </div>\n\n          <div style=\"margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #eee;\">\n            <div style=\"font-weight:600; color:#C9A84C; margin-bottom:6px;\">Q. 알도사 코드(AWR/AJR/AWS/AJS)는 각각 무슨 뜻인가요?</div>\n            코드 형식: <b>A + 카테고리(1자) + 용도(1자) + 발급연월(4자) + 랜덤(4자)</b><br><br>\n            카테고리 — W = 시계(Watch), J = 주얼리(Jewelry)<br>\n            용도 — R = 등록(Register, 신규 자산 등록용), S = AS서비스(Service, AS 접수 확인/연결용)<br><br>\n            예시: <b>AWS2608K7Q1</b> = 시계 · AS서비스 · 2026년 8월 발급<br>\n            ※ 새 카테고리(예: 악기 등)가 추가되면 Code.gs의 generateClaimCode 함수와 이 설명도 함께 업데이트해야 합니다.\n          </div>\n\n          <div style=\"margin-bottom:0;\">\n            <div style=\"font-weight:600; color:#C9A84C; margin-bottom:6px;\">Q. admin.js를 수정하면 어떤 절차로 반영하나요?</div>\n            admin.js는 GitHub 레포에서 jsDelivr CDN(커밋 해시 고정)으로 불러오는 구조입니다. 수정할 때마다 아래 절차가 필요합니다.<br><br>\n            1) 로컬 저장소 폴더로 이동 후 파일 수정<br>\n            2) <code>git add admin.js</code><br>\n            3) <code>git commit -m \"수정 내용\"</code><br>\n            4) <code>git push origin main</code><br>\n            5) <code>git log -1 --format=\"%H\"</code> 로 새 커밋 해시 확인<br>\n            6) Framer의 admin.js &lt;script src=\"...\"&gt; URL에서 <b>@커밋해시</b> 부분을 새 해시로 교체<br><br>\n            ※ jsDelivr은 <b>@main</b>(브랜치명) 기준으로 불러오면 캐시가 오래 남아 수정이 반영 안 되는 문제가 있어, 반드시 커밋 해시로 고정해서 씁니다.\n          </div>\n\n\n        </div>\n      </div>\n    </div>\n\n    <div class=\"tab-content\" id=\"tab-members\">\n      <div class=\"panel\">\n        <h3>멤버 관리</h3>\n        <input type=\"text\" class=\"all-asset-search\" id=\"memberSearch\" placeholder=\"이름, 이메일, 연락처로 검색\" oninput=\"renderMembers()\" />\n        <div id=\"membersList\"><div class=\"empty-msg\">불러오는 중...</div></div>\n      </div>\n    </div>\n\n    <div class=\"tab-content\" id=\"tab-store\">\n      <div class=\"panel\">\n        <h3>상품 관리</h3>\n        <button class=\"btn-main\" style=\"margin-top:0; margin-bottom:16px;\" onclick=\"toggleProductForm()\">+ 새 상품 등록</button>\n        <div id=\"productFormArea\"></div>\n        <div id=\"productsList\"><div class=\"empty-msg\">불러오는 중...</div></div>\n      </div>\n      <div class=\"panel\">\n        <h3>주문 관리 (전체 — 결제확인~배송 통합)</h3>\n        <div id=\"activeOrdersList\"><div class=\"empty-msg\">불러오는 중...</div></div>\n      </div>\n    </div>\n\n    <div class=\"tab-content\" id=\"tab-quotes\">\n      <div class=\"panel\">\n        <h3>파트너 견적 확정 \/ 누적 조회</h3>\n        <div id=\"quotesList\"><div class=\"empty-msg\">불러오는 중...</div></div>\n      </div>\n    </div>\n\n    <div class=\"tab-content\" id=\"tab-cancel\">\n      <div class=\"panel\">\n        <h3>주문 취소 요청 관리</h3>\n        <div id=\"cancelRequestsList\"><div class=\"empty-msg\">불러오는 중...</div></div>\n      </div>\n      <div class=\"panel\">\n        <h3>취소 처리 이력 (최근 30건)</h3>\n        <div id=\"cancelHistoryList\"><div class=\"empty-msg\">불러오는 중...</div></div>\n      </div>\n    </div>\n\n    <div class=\"tab-content\" id=\"tab-archive\">\n      <div class=\"panel\">\n        <h3>메인 페이지 변천사</h3>\n        <div id=\"archiveCarouselArea\"><div class=\"empty-msg\">불러오는 중...</div></div>\n      </div>\n    </div>\n\n    <div class=\"tab-content\" id=\"tab-inquiries\">\n      <div class=\"panel\">\n        <h3>파트너 도입 문의</h3>\n        <div id=\"inquiriesList\"><div class=\"empty-msg\">불러오는 중...</div></div>\n      </div>\n    </div>\n\n    <div class=\"tab-content\" id=\"tab-faq\">\n      <div class=\"panel\">\n        <h3>FAQ 관리</h3>\n        <button class=\"btn-main\" style=\"margin-top:0; margin-bottom:16px;\" onclick=\"toggleFaqForm()\">+ 새 FAQ 등록</button>\n        <div id=\"faqFormArea\"></div>\n        <div id=\"faqList\"><div class=\"empty-msg\">불러오는 중...</div></div>\n      </div>\n    </div>\n  </div>";
   const API_URL = "https://script.google.com/macros/s/AKfycbyk1khfq0I8XNYDgvPcIa0aTzYayAM7HekoRapfCZc7CEqfDR2Eh3AxUi8ceqemk4aK3A/exec";
   var ADMIN_KEY_STORAGE = "aldosa_admin_key_session";
   var adminKey = "";
@@ -17,7 +14,6 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
   var selectedVendor = {};
   var notesCache = {};
   var openNotesRequestId = null;
-
   var STAGE_DEFS = [
     { key: "received", label: "입고" },
     { key: "quoted", label: "견적" },
@@ -26,14 +22,11 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
     { key: "repaired", label: "수리" },
     { key: "shipped", label: "출고" }
   ];
-
   var WORK_TYPE_OPTIONS = ["오버홀","배터리 교체","폴리싱","부품 교체","크리스탈 교체","가스켓/씰 교체","다이얼 교체","무브먼트 수리","케이스/브레이슬릿 광택","기타(직접입력)"];
-
   function todayDateStr() {
     var d = new Date();
     return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
   }
-
   function checkAdminKey() {
     var key = document.getElementById("adminKeyInput").value.trim();
     if (!key) return;
@@ -55,7 +48,6 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       })
       .catch(function() { document.getElementById("lockMsg").style.display = "block"; });
   }
-
   (function autoLogin() {
     var saved = sessionStorage.getItem(ADMIN_KEY_STORAGE);
     if (saved) {
@@ -63,7 +55,6 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       checkAdminKey();
     }
   })();
-
   function switchTab(name) {
     document.querySelectorAll(".tab").forEach(function(t) { t.classList.remove("active"); });
     document.querySelectorAll(".tab-content").forEach(function(c) { c.classList.remove("active"); });
@@ -81,35 +72,30 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
     if (name === "faq") loadFaqAdmin();
     if (name === "members") loadMembers();
   }
-
   function formatPhoneAdmin(input) {
     var value = input.value.replace(/[^0-9]/g, "");
     if (value.length < 4) { input.value = value; }
     else if (value.length < 8) { input.value = value.slice(0,3) + "-" + value.slice(3); }
     else { input.value = value.slice(0,3) + "-" + value.slice(3,7) + "-" + value.slice(7,11); }
   }
-
   function formatDate(iso) {
     if (!iso) return "-";
     var d = new Date(iso);
     if (isNaN(d.getTime())) return iso;
     return d.getFullYear() + "." + String(d.getMonth()+1).padStart(2,"0") + "." + String(d.getDate()).padStart(2,"0");
   }
-
   function formatDateShort(iso) {
     if (!iso) return "";
     var d = new Date(iso);
     if (isNaN(d.getTime())) return "";
     return String(d.getMonth()+1).padStart(2,"0") + "." + String(d.getDate()).padStart(2,"0");
   }
-
   function formatDateTime(iso) {
     if (!iso) return "-";
     var d = new Date(iso);
     if (isNaN(d.getTime())) return iso;
     return d.toLocaleString("ko-KR", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
   }
-
   // ── 점포/담당자/협력업체 드롭다운 ────────────────────
   function loadStores() {
     fetch(API_URL + "?action=getStores")
@@ -125,13 +111,11 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
         sel.innerHTML = html;
       });
   }
-
   function loadShops() {
     fetch(API_URL + "?action=getShops")
       .then(function(r) { return r.json(); })
       .then(function(data) { if (data.success) shopsCache = data.shops; });
   }
-
   function loadStaffForStore() {
     var sel = document.getElementById("as_store");
     var storeId = sel.value;
@@ -155,7 +139,6 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
         staffSel.innerHTML = html;
       });
   }
-
   // ── 자산 승인 ──────────────────────────────────────
   function loadPending() {
     fetch(API_URL + "?action=adminGetPending&admin_key=" + encodeURIComponent(adminKey))
@@ -187,7 +170,6 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
         el.innerHTML = html;
       });
   }
-
   function approveAsset(assetId) {
     var modelInput = document.getElementById("modelInput_" + assetId);
     var model = modelInput ? modelInput.value.trim() : "";
@@ -198,7 +180,6 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       .then(function(r) { return r.json(); })
       .then(function() { loadPending(); });
   }
-
   function rejectAsset(assetId) {
     var reason = prompt("거절 사유를 입력하세요:");
     if (reason === null) return;
@@ -206,7 +187,6 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       .then(function(r) { return r.json(); })
       .then(function() { loadPending(); });
   }
-
   function requestMoreInfo(assetId) {
     var reason = prompt("보완이 필요한 사유를 입력하세요 (고객에게 그대로 표시됩니다):");
     if (reason === null) return;
@@ -215,13 +195,11 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       .then(function(r) { return r.json(); })
       .then(function() { loadPending(); });
   }
-
   // ── AS 신규 접수 ────────────────────────────────────
   function showASNewMsg(text, type) {
     var el = document.getElementById("asNewMsg");
     el.textContent = text; el.className = "msg-box " + type; el.style.display = "block";
   }
-
   function toggleAsCategoryFields() {
     var isJewelry = document.getElementById("as_category").value === "jewelry";
     document.getElementById("as_brand").style.display = isJewelry ? "none" : "block";
@@ -232,12 +210,9 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       document.getElementById("as_brand_jewelry_custom_wrap").style.display = "none";
     }
   }
-
   var asSubmitting = false;
-
   function handleCreateAS() {
     if (asSubmitting) return;
-
     var serial = document.getElementById("as_serial").value.trim();
     var serialPending = document.getElementById("as_serial_pending").checked;
     var category = document.getElementById("as_category").value; // "watch" | "jewelry"
@@ -263,10 +238,8 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
     }
     var model = document.getElementById("as_model").value.trim();
     var intakePhone = document.getElementById("as_intake_phone").value.trim();
-
     document.getElementById("asNewMsg").style.display = "none";
     document.getElementById("asNewCodeResult").innerHTML = "";
-
     if (!brand) {
       showASNewMsg(brandSelect === "기타" ? "브랜드명을 입력해주세요." : "브랜드는 필수입니다.", "error");
       return;
@@ -279,10 +252,8 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       showASNewMsg("의뢰인 연락처는 필수입니다.", "error");
       return;
     }
-
     var storeSel = document.getElementById("as_store");
     var storeName = storeSel.selectedOptions[0] ? storeSel.selectedOptions[0].getAttribute("data-name") || "" : "";
-
     var staffVal = document.getElementById("as_staff").value;
     var staffName = "", staffPhone = "";
     if (staffVal) {
@@ -290,13 +261,11 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       staffName = parts[0] || "";
       staffPhone = parts[1] || "";
     }
-
     var receivedDateVal = document.getElementById("as_received_date").value;
     var stageReceived = "";
     if (receivedDateVal) {
       stageReceived = new Date(receivedDateVal + "T00:00:00").toISOString();
     }
-
     var params = new URLSearchParams({
       action: "adminCreateASRequest",
       admin_key: adminKey,
@@ -314,11 +283,9 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       staff_phone: staffPhone,
       stage_received: stageReceived
     });
-
     asSubmitting = true;
     var submitBtn = document.querySelector('#tab-as-new .btn-main');
     if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "등록 중..."; }
-
     fetch(API_URL + "?" + params.toString())
       .then(function(r) { return r.json(); })
       .then(function(data) {
@@ -356,7 +323,6 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
         if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "AS 접수 등록"; }
       });
   }
-
   // ── AS 진행 관리 ────────────────────────────────────
   function loadASManage() {
     fetch(API_URL + "?action=adminGetAllAS&admin_key=" + encodeURIComponent(adminKey))
@@ -365,7 +331,6 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
         if (data.success) { asListCache = data.requests; renderASManage(); }
       });
   }
-
   function renderASManage() {
     var el = document.getElementById("asManageList");
     if (asListCache.length === 0) {
@@ -396,7 +361,6 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
     });
     html += '</table>';
     el.innerHTML = html;
-
     if (openItemsRequestId) {
       var openRow = document.getElementById("itemsRow_" + openItemsRequestId);
       if (openRow) {
@@ -412,7 +376,6 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       }
     }
   }
-
   function renderStageTrack(r) {
     var dots = '<div class="stage-track">';
     var labels = '<div class="stage-labels">';
@@ -426,7 +389,6 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
     labels += '</div>';
     return dots + labels + '<button type="button" class="stage-edit-link" style="margin-top:6px; display:block;" onclick="openStageModal(\'' + r.request_id + '\')">날짜 확인/수정</button>';
   }
-
   function renderOrderCancelBadge(r) {
     if (r.order_status === "취소완료") {
       return '<div style="margin-top:6px;"><span class="status-tag tag-거절">주문 취소완료</span></div>';
@@ -436,7 +398,6 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
     }
     return "";
   }
-
   function buildStageListHtml(r) {
     var html = '<div class="stage-list">';
     STAGE_DEFS.forEach(function(s) {
@@ -458,7 +419,6 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
     html += '</div>';
     return html;
   }
-
   function openStageModal(requestId) {
     var r = asListCache.filter(function(x) { return x.request_id === requestId; })[0];
     if (!r) return;
@@ -474,12 +434,10 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
     overlay.onclick = function(e) { if (e.target === overlay) closeStageModal(); };
     document.body.appendChild(overlay);
   }
-
   function closeStageModal() {
     var overlay = document.getElementById('stageModalOverlay');
     if (overlay) overlay.remove();
   }
-
   function startEditStageDate(requestId, stageKey, currentIso) {
     var d = currentIso ? new Date(currentIso) : new Date();
     var dateStr = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
@@ -489,7 +447,6 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       '<button type="button" class="stage-edit-link" onclick="saveStageDate(\'' + requestId + '\',\'' + stageKey + '\')">저장</button>' +
       '<button type="button" class="stage-edit-link" onclick="openStageModal(\'' + requestId + '\')">취소</button>';
   }
-
   function refreshASManageAndModal(requestId) {
     fetch(API_URL + "?action=adminGetAllAS&admin_key=" + encodeURIComponent(adminKey))
       .then(function(r) { return r.json(); })
@@ -504,7 +461,6 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
         }
       });
   }
-
   function saveStageDate(requestId, stageKey) {
     var rowKey = requestId + '_' + stageKey;
     var input = document.getElementById("stageDateInput_" + rowKey);
@@ -516,7 +472,6 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       .then(function(r) { return r.json(); })
       .then(function() { refreshASManageAndModal(requestId); });
   }
-
   function toggleStage(requestId, stageKey, currentlyDone) {
     if (currentlyDone) {
       var stageLabel = STAGE_DEFS.find(function(s) { return s.key === stageKey; }).label;
@@ -538,7 +493,6 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       .then(function(r) { return r.json(); })
       .then(function() { refreshASManageAndModal(requestId); });
   }
-
   function renderBillingCell(r) {
     return '<div class="billing-edit">' +
       '<input type="number" id="quote_' + r.request_id + '" value="' + (r.quote_amount||'') + '" placeholder="견적" />' +
@@ -546,22 +500,23 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       '<button onclick="saveBilling(\'' + r.request_id + '\')">저장</button>' +
       '</div>';
   }
-
   function saveBilling(requestId) {
     var quote = document.getElementById("quote_" + requestId).value;
     var charge = document.getElementById("charge_" + requestId).value;
-    var params = new URLSearchParams({
+    var paramsObj = {
       action: "adminUpdateASBilling",
       admin_key: adminKey,
       request_id: requestId,
       quote_amount: quote,
       charge_amount: charge
-    });
+    };
+    var commentInput = document.getElementById("customerComment_" + requestId);
+    if (commentInput) paramsObj.customer_comment = commentInput.value;
+    var params = new URLSearchParams(paramsObj);
     fetch(API_URL + "?" + params.toString())
       .then(function(r) { return r.json(); })
       .then(function() { loadASManage(); });
   }
-
   // ── 수리 항목별 단가 + 수리처 선택 ───────────────────
   function toggleItemsPanel(requestId) {
     var row = document.getElementById("itemsRow_" + requestId);
@@ -574,7 +529,6 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       row.style.display = "none";
     }
   }
-
   function loadASItems(requestId) {
     var params = new URLSearchParams({ action: "adminGetASItems", admin_key: adminKey, request_id: requestId });
     fetch(API_URL + "?" + params.toString())
@@ -584,15 +538,11 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
         renderItemsPanel(requestId);
       });
   }
-
   function renderItemsPanel(requestId) {
     var items = asItemsCache[requestId] || [];
     var total = items.reduce(function(sum, it) { return sum + (parseInt(it.cost) || 0); }, 0);
-
     var arInfo = asListCache.find(function(x) { return x.request_id === requestId; }) || {};
-
     var html = '<div class="items-panel">';
-
     html += '<div class="vendor-select-box">';
     html += '<label>수리처 (출고 처리 시 이력에 반영됩니다)</label>';
     html += '<select id="repairVendor_' + requestId + '" onchange="selectedVendor[\'' + requestId + '\']=this.value;">';
@@ -603,7 +553,6 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
     });
     html += '</select>';
     html += '</div>';
-
     html += '<div class="vendor-select-box">';
     html += '<label>운송 정보 (출고 처리 시 같이 기록됩니다 · 고객에게는 노출되지 않습니다)</label>';
     html += '<div class="field-row" style="margin-bottom:0;">';
@@ -615,7 +564,6 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
     html += '</select>';
     html += '<input type="text" id="trackingInfo_' + requestId + '" placeholder="운송장번호" value="' + (arInfo.tracking_info||'') + '" />';
     html += '</div></div>';
-
     html += '<table class="items-table">';
     html += '<tr><th>항목</th><th>비고</th><th style="text-align:right;">비용</th><th></th></tr>';
     if (items.length === 0) {
@@ -637,7 +585,10 @@ var previewVat = Math.round(total * 0.1);
     html += '<div style="background:#FFFBF0; border:1px solid #F0C040; border-radius:2px; padding:10px 12px; font-size:11px; color:#8B6914; margin-bottom:12px; line-height:1.7;">';
     html += '위 합계에 부가세 10%를 더하면 최종 청구금액 ' + previewCharge.toLocaleString("ko-KR") + '원이 됩니다. 아래 버튼을 눌러야 견적/청구 칸에 자동 반영됩니다.';
     html += '</div>';
-
+    html += '<div class="vendor-select-box">';
+    html += '<label>고객 안내 코멘트 (선택 · 입력 시 고객 마이페이지에 노출됩니다)</label>';
+    html += '<textarea id="customerComment_' + requestId + '" placeholder="예: 배터리 자연 소모로 교체 필요합니다. 방수 테스트도 함께 진행됩니다." style="width:100%; min-height:54px; padding:8px 10px; font-size:12.5px; font-family:inherit; border:1px solid #ddd; border-radius:2px; resize:vertical;">' + (arInfo.customer_comment || '') + '</textarea>';
+    html += '</div>';
     html += '<div class="field-row3" style="margin-bottom:0;">';
     html += '<div class="field" style="margin-bottom:0;"><select id="itemType_' + requestId + '" onchange="handleItemTypeChange(\'' + requestId + '\')">';
     WORK_TYPE_OPTIONS.forEach(function(t) { html += '<option>' + t + '</option>'; });
@@ -650,7 +601,6 @@ var previewVat = Math.round(total * 0.1);
     html += '</div>';
     document.getElementById("itemsPanel_" + requestId).innerHTML = html;
   }
-
   function handleItemTypeChange(requestId) {
     var typeSel = document.getElementById("itemType_" + requestId);
     var nameInput = document.getElementById("itemName_" + requestId);
@@ -661,7 +611,6 @@ var previewVat = Math.round(total * 0.1);
       nameInput.value = typeSel.value;
     }
   }
-
   function addASItem(requestId) {
     var type = document.getElementById("itemType_" + requestId).value;
     var name = document.getElementById("itemName_" + requestId).value.trim();
@@ -675,7 +624,6 @@ var previewVat = Math.round(total * 0.1);
       .then(function(r) { return r.json(); })
       .then(function() { loadASItems(requestId); });
   }
-
   function deleteASItem(itemId, requestId) {
     if (!confirm("이 항목을 삭제할까요?")) return;
     var params = new URLSearchParams({ action: "adminDeleteASItem", admin_key: adminKey, item_id: itemId });
@@ -683,7 +631,6 @@ var previewVat = Math.round(total * 0.1);
       .then(function(r) { return r.json(); })
       .then(function() { loadASItems(requestId); });
   }
-
 function applyItemsTotal(requestId, total) {
     var vat = Math.round(total * 0.1);
     var charge = total + vat;
@@ -693,13 +640,11 @@ function applyItemsTotal(requestId, total) {
     if (chargeInput) chargeInput.value = charge;
     saveBilling(requestId);
   }
-
   // ── 시리얼 보완 ──────────────────────────────────────
   var CLOUDINARY_CLOUD_NAME = "dztigbzcp";
   var CLOUDINARY_UPLOAD_PRESET = "aldosa_unsigned";
   var CLOUDINARY_UPLOAD_URL = "https://api.cloudinary.com/v1_1/" + CLOUDINARY_CLOUD_NAME + "/image/upload";
   var serialFillImageUrl = {};
-
   function toggleSerialFillPanel(requestId) {
     var row = document.getElementById("serialFillRow_" + requestId);
     if (row.style.display === "none") {
@@ -721,7 +666,6 @@ function applyItemsTotal(requestId, total) {
       row.style.display = "none";
     }
   }
-
   function handleSerialPhotoSelect(requestId) {
     var file = document.getElementById("serialFillFile_" + requestId).files[0];
     if (!file) return;
@@ -729,12 +673,10 @@ function applyItemsTotal(requestId, total) {
     var area = document.getElementById("serialUploadArea_" + requestId);
     label.textContent = "업로드 중...";
     area.style.opacity = "0.6";
-
     var formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
     formData.append("tags", "serial_verify_" + requestId);
-
     fetch(CLOUDINARY_UPLOAD_URL, { method: "POST", body: formData })
       .then(function(res) { return res.json(); })
       .then(function(data) {
@@ -753,7 +695,6 @@ function applyItemsTotal(requestId, total) {
         label.textContent = "업로드 실패, 다시 선택해주세요";
       });
   }
-
   function confirmSerialFill(requestId) {
     var serial = document.getElementById("serialFillInput_" + requestId).value.trim();
     var imageUrl = serialFillImageUrl[requestId] || "";
@@ -765,11 +706,9 @@ function applyItemsTotal(requestId, total) {
         if (data.success) { delete serialFillImageUrl[requestId]; loadASManage(); } else { alert(data.message); }
       });
   }
-
   // ── CS 메모 ──────────────────────────────────────────
   var noteSubmitting = {};
   var editingNoteId = null;
-
   function toggleNotesPanel(requestId) {
     var row = document.getElementById("notesRow_" + requestId);
     if (row.style.display === "none") {
@@ -781,7 +720,6 @@ function applyItemsTotal(requestId, total) {
       row.style.display = "none";
     }
   }
-
   function loadNotes(requestId) {
     var params = new URLSearchParams({ action: "adminGetNotes", admin_key: adminKey, request_id: requestId });
     fetch(API_URL + "?" + params.toString())
@@ -791,7 +729,6 @@ function applyItemsTotal(requestId, total) {
         renderNotesPanel(requestId);
       });
   }
-
   function renderNotesPanel(requestId) {
     var notes = notesCache[requestId] || [];
     var html = '<div class="items-panel">';
@@ -823,17 +760,14 @@ function applyItemsTotal(requestId, total) {
     html += '</div>';
     document.getElementById("notesPanel_" + requestId).innerHTML = html;
   }
-
   function addNote(requestId) {
     if (noteSubmitting[requestId]) return;
     var textEl = document.getElementById("noteInput_" + requestId);
     var text = textEl.value.trim();
     if (!text) return;
-
     noteSubmitting[requestId] = true;
     var btn = document.getElementById("addNoteBtn_" + requestId);
     if (btn) { btn.disabled = true; btn.textContent = "추가 중..."; }
-
     var params = new URLSearchParams({ action: "adminAddNote", admin_key: adminKey, request_id: requestId, note: text, admin_name: "ALDOSA" });
     fetch(API_URL + "?" + params.toString())
       .then(function(r) { return r.json(); })
@@ -846,17 +780,14 @@ function applyItemsTotal(requestId, total) {
         if (btn) { btn.disabled = false; btn.textContent = "메모 추가"; }
       });
   }
-
   function startEditNote(requestId, noteId) {
     editingNoteId = noteId;
     renderNotesPanel(requestId);
   }
-
   function cancelEditNote(requestId) {
     editingNoteId = null;
     renderNotesPanel(requestId);
   }
-
   function saveEditNote(requestId, noteId) {
     var textEl = document.getElementById("editNoteInput_" + noteId);
     var text = textEl.value.trim();
@@ -869,12 +800,10 @@ function applyItemsTotal(requestId, total) {
         loadNotes(requestId);
       });
   }
-
   // ── 클레임 코드 ─────────────────────────────────────
   // ── 출고전 등록용 코드 대량생성 (쥬얼리 QR 등) ──────────
   var lastBulkResults = [];
   var qrLibLoading = null;
-
   function loadQrCodeLib() {
     if (window.QRCode) return Promise.resolve();
     if (qrLibLoading) return qrLibLoading;
@@ -887,24 +816,19 @@ function applyItemsTotal(requestId, total) {
     });
     return qrLibLoading;
   }
-
   function handleBulkGenerate() {
     var category = document.getElementById("bulk_category").value;
     var brand = document.getElementById("bulk_brand").value.trim();
     var product = document.getElementById("bulk_product").value.trim();
     var count = document.getElementById("bulk_count").value;
-
     var msgEl = document.getElementById("bulkMsg");
     msgEl.style.display = "none";
-
     if (!brand || !product) { msgEl.textContent = "브랜드와 제품명을 입력하세요."; msgEl.className = "msg-box error"; msgEl.style.display = "block"; return; }
     if (!count || count < 1 || count > 1000) { msgEl.textContent = "생성 개수는 1~1000 사이로 입력하세요."; msgEl.className = "msg-box error"; msgEl.style.display = "block"; return; }
-
     var params = new URLSearchParams({
       action: "adminBulkGenerateJewelryCodes", admin_key: adminKey,
       category: category, brand: brand, product_name: product, count: count
     });
-
     fetch(API_URL + "?" + params.toString())
       .then(function(r) { return r.json(); })
       .then(function(data) {
@@ -922,7 +846,6 @@ function applyItemsTotal(requestId, total) {
         msgEl.textContent = "오류가 발생했습니다."; msgEl.className = "msg-box error"; msgEl.style.display = "block";
       });
   }
-
   function renderBulkResult(brand, product) {
     var el = document.getElementById("bulkResultArea");
     var html = '<div class="items-panel" style="margin-top:14px;">';
@@ -935,10 +858,9 @@ function applyItemsTotal(requestId, total) {
     html += '</div></div>';
     el.innerHTML = html;
   }
-
   function downloadBulkCsv(brand, product) {
     var csv = "code,url\n" + lastBulkResults.map(function(c) { return c.code + "," + c.url; }).join("\n");
-    var blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    var blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
     var link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = "aldosa_codes_" + brand + "_" + product + ".csv";
@@ -946,7 +868,6 @@ function applyItemsTotal(requestId, total) {
     link.click();
     document.body.removeChild(link);
   }
-
   function previewFirstQr() {
     if (lastBulkResults.length === 0) return;
     var sample = lastBulkResults[0];
@@ -972,9 +893,7 @@ function applyItemsTotal(requestId, total) {
       });
     });
   }
-
   var codesCache = [];
-
   function loadCodes() {
     fetch(API_URL + "?action=adminGetCodes&admin_key=" + encodeURIComponent(adminKey))
       .then(function(r) { return r.json(); })
@@ -983,7 +902,6 @@ function applyItemsTotal(requestId, total) {
         renderCodes();
       });
   }
-
 function renderCodes() {
     var searchEl = document.getElementById("codeSearch");
     var keyword = searchEl ? searchEl.value.toLowerCase() : "";
@@ -1013,7 +931,6 @@ function renderCodes() {
     html += '</table>';
     el.innerHTML = html;
   }
-
   function reactivateCodeAdmin(codeId) {
     if (!confirm("이 코드를 재활성화할까요? (재활성화 시점부터 3일간 유효합니다)")) return;
     var params = new URLSearchParams({ action: "adminReactivateCode", admin_key: adminKey, code_id: codeId });
@@ -1026,7 +943,6 @@ function renderCodes() {
       })
       .catch(function() { alert("오류가 발생했습니다."); });
   }
-
  // ── 전체 자산 ───────────────────────────────────────
   function loadAllAssets() {
     fetch(API_URL + "?action=adminGetAllAssets&admin_key=" + encodeURIComponent(adminKey))
@@ -1035,7 +951,6 @@ function renderCodes() {
         if (data.success) { allAssetsCache = data.assets; renderAllAssets(); }
       });
   }
-
   function renderAllAssets() {
     var keyword = (document.getElementById("assetSearch").value || "").toLowerCase();
     var filtered = allAssetsCache.filter(function(a) {
@@ -1055,12 +970,10 @@ function renderCodes() {
     html += '</table>';
     el.innerHTML = html;
   }
-
   // ── 스토어 관리: 상품 ─────────────────────────────────
   var productsCache = [];
   var productImageUrl = "";
   var editingProductId = null;
-
   function loadProductsAdmin() {
     fetch(API_URL + "?action=adminGetProducts&admin_key=" + encodeURIComponent(adminKey))
       .then(function(r) { return r.json(); })
@@ -1069,7 +982,6 @@ function renderCodes() {
         renderProductsAdmin();
       });
   }
-
   function renderProductsAdmin() {
     var el = document.getElementById("productsList");
     if (productsCache.length === 0) { el.innerHTML = '<div class="empty-msg">등록된 상품이 없습니다.</div>'; return; }
@@ -1088,19 +1000,16 @@ function renderCodes() {
     html += '</table>';
     el.innerHTML = html;
   }
-
   function toggleProductForm() {
     var area = document.getElementById("productFormArea");
     if (area.innerHTML) { area.innerHTML = ""; editingProductId = null; return; }
     renderProductForm(null);
   }
-
   function editProduct(productId) {
     var p = productsCache.find(function(x) { return x.product_id === productId; });
     if (!p) return;
     renderProductForm(p);
   }
-
   function renderProductForm(p) {
     editingProductId = p ? p.product_id : null;
     productImageUrl = p ? p.image_url || "" : "";
@@ -1121,7 +1030,6 @@ function renderCodes() {
       '<button class="btn-main" style="margin-top:4px;" onclick="saveProduct()">' + (p ? '수정 저장' : '등록') + '</button>' +
       '</div>';
   }
-
   function handleProductImageSelect() {
     var file = document.getElementById("pf_image_file").files[0];
     if (!file) return;
@@ -1147,7 +1055,6 @@ function renderCodes() {
       })
       .catch(function() { area.style.opacity = "1"; label.textContent = "업로드 실패, 다시 선택해주세요"; });
   }
-
   function saveProduct() {
     var name = document.getElementById("pf_name").value.trim();
     var price = document.getElementById("pf_price").value;
@@ -1169,7 +1076,6 @@ function renderCodes() {
         } else { alert(data.message); }
       });
   }
-
   function deleteProduct(productId) {
     if (!confirm("이 상품을 삭제할까요?")) return;
     var params = new URLSearchParams({ action: "adminDeleteProduct", admin_key: adminKey, product_id: productId });
@@ -1177,10 +1083,8 @@ function renderCodes() {
       .then(function(r) { return r.json(); })
       .then(function() { loadProductsAdmin(); });
   }
-
   // ── 스토어 관리: 주문 관리 (결제확인+배송관리 통합) ──────
   var COURIER_OPTIONS = ["우체국택배", "CJ대한통운", "한진택배", "로젠택배", "기타"];
-
   function loadActiveOrders() {
     fetch(API_URL + "?action=adminGetActiveOrders&admin_key=" + encodeURIComponent(adminKey))
       .then(function(r) { return r.json(); })
@@ -1198,7 +1102,6 @@ function renderCodes() {
           html += '<td style="max-width:150px;font-size:12px;color:#777;">' + (o.recipient_address||'-') + (o.shipping_memo ? '<br><span style="color:#aaa;">(' + o.shipping_memo + ')</span>' : '') + '</td>';
           html += '<td style="font-weight:600;">' + parseInt(o.final_amount).toLocaleString("ko-KR") + '원</td>';
           html += '<td>' + formatDate(o.created_at) + '</td>';
-
           if (o.status === "계좌안내됨" || o.status === "입금확인대기") {
             html += '<td><span class="status-tag tag-대기중" style="display:block; margin-bottom:6px;">' + (o.status === "계좌안내됨" ? "계좌안내(고객미확인)" : "입금확인대기") + '</span>';
             html += '<button class="btn-sm btn-approve" onclick="confirmOrderAdmin(\'' + o.order_id + '\')">결제 확정</button></td>';
@@ -1229,7 +1132,6 @@ function renderCodes() {
         el.innerHTML = html;
       });
   }
-
   function confirmOrderAdmin(orderId) {
     if (!confirm("이 주문을 결제완료로 확정할까요? (마일리지 적립/등급갱신이 즉시 반영됩니다)")) return;
     var params = new URLSearchParams({ action: "adminConfirmOrder", admin_key: adminKey, order_id: orderId });
@@ -1237,7 +1139,6 @@ function renderCodes() {
       .then(function(r) { return r.json(); })
       .then(function(data) { if (!data.success) alert(data.message); loadActiveOrders(); });
   }
-
   function shipOrderAdmin(orderId) {
     var courier = document.getElementById("courier_" + orderId).value;
     var tracking = document.getElementById("tracking_" + orderId).value.trim();
@@ -1247,7 +1148,6 @@ function renderCodes() {
       .then(function(r) { return r.json(); })
       .then(function(data) { if (!data.success) alert(data.message); loadActiveOrders(); });
   }
-
   function completeDeliveryAdmin(orderId) {
     if (!confirm("배송완료로 처리할까요?")) return;
     var params = new URLSearchParams({ action: "adminCompleteDelivery", admin_key: adminKey, order_id: orderId });
@@ -1255,7 +1155,6 @@ function renderCodes() {
       .then(function(r) { return r.json(); })
       .then(function(data) { if (!data.success) alert(data.message); loadActiveOrders(); });
   }
-
   // ── 주문 취소 요청 관리 ───────────────────────────────
   function loadCancelRequests() {
     fetch(API_URL + "?action=adminGetPendingCancelRequests&admin_key=" + encodeURIComponent(adminKey))
@@ -1285,13 +1184,11 @@ function renderCodes() {
         el.innerHTML = html;
       });
   }
-
   function setCancelRowDisabled(orderId, disabled) {
     var row = document.getElementById("cancelRow_" + orderId);
     if (!row) return;
     row.querySelectorAll("button").forEach(function(b) { b.disabled = disabled; });
   }
-
   function approveCancelRequestAdmin(orderId) {
     if (!confirm("이 주문을 취소 승인 처리할까요?\n카드결제/카카오페이 건은 포트원을 통해 자동으로 결제취소되고, 마일리지/쿠폰도 자동 환급됩니다.")) return;
     setCancelRowDisabled(orderId, true);
@@ -1305,7 +1202,6 @@ function renderCodes() {
       })
       .catch(function() { alert("오류가 발생했습니다."); setCancelRowDisabled(orderId, false); });
   }
-
   function rejectCancelRequestAdmin(orderId) {
     var reason = prompt("반려 사유를 입력해주세요 (선택)", "");
     if (reason === null) return;
@@ -1320,7 +1216,6 @@ function renderCodes() {
       })
       .catch(function() { alert("오류가 발생했습니다."); setCancelRowDisabled(orderId, false); });
   }
-
   function loadCancelHistoryAdmin() {
     fetch(API_URL + "?action=adminGetCancelHistory&admin_key=" + encodeURIComponent(adminKey))
       .then(function(r) { return r.json(); })
@@ -1346,11 +1241,9 @@ function renderCodes() {
         el.innerHTML = html;
       });
   }
-
   // ── 메인 페이지 변천사 아카이브 (조회 전용, 캐러셀) ────
   var archiveEntries = [];
   var archiveCurrentIdx = 0;
-
   function loadHomepageArchive() {
     fetch(API_URL + "?action=adminGetHomepageArchive&admin_key=" + encodeURIComponent(adminKey))
       .then(function(r) { return r.json(); })
@@ -1360,7 +1253,6 @@ function renderCodes() {
         renderArchiveCarousel();
       });
   }
-
   function renderArchiveCarousel() {
     var el = document.getElementById("archiveCarouselArea");
     if (archiveEntries.length === 0) {
@@ -1371,7 +1263,6 @@ function renderCodes() {
     var shotHtml = e.screenshot_url
       ? '<img src="' + e.screenshot_url + '" style="width:100%; height:100%; object-fit:cover;" />'
       : '<div style="text-align:center;">🖼 스크린샷 미등록<br><span style="font-size:11px;">(' + (e.year_month||'') + ' 당시 메인 페이지)</span></div>';
-
     var html = '<div class="archive-carousel-wrap">';
     html += '<div class="archive-nav-btn prev' + (archiveCurrentIdx === 0 ? ' disabled' : '') + '" onclick="archiveNav(-1)">‹</div>';
     html += '<div class="archive-nav-btn next' + (archiveCurrentIdx === archiveEntries.length - 1 ? ' disabled' : '') + '" onclick="archiveNav(1)">›</div>';
@@ -1382,28 +1273,23 @@ function renderCodes() {
     html += '<div class="archive-title">' + (e.title || '') + '</div>';
     html += '<div class="archive-memo">' + (e.memo || '') + '</div>';
     html += '</div></div></div>';
-
     html += '<div class="archive-dots">';
     archiveEntries.forEach(function(_, i) {
       html += '<div class="archive-dot' + (i === archiveCurrentIdx ? ' active' : '') + '" onclick="archiveGoTo(' + i + ')"></div>';
     });
     html += '</div>';
-
     el.innerHTML = html;
   }
-
   function archiveNav(delta) {
     var next = archiveCurrentIdx + delta;
     if (next < 0 || next >= archiveEntries.length) return;
     archiveCurrentIdx = next;
     renderArchiveCarousel();
   }
-
   function archiveGoTo(idx) {
     archiveCurrentIdx = idx;
     renderArchiveCarousel();
   }
-
   // ── 파트너 도입 문의 ─────────────────────────────────
   function loadPartnerInquiries() {
     fetch(API_URL + "?action=adminGetPartnerInquiries&admin_key=" + encodeURIComponent(adminKey))
@@ -1428,11 +1314,9 @@ function renderCodes() {
         el.innerHTML = html;
       });
   }
-
   // ── 멤버 관리 ─────────────────────────────────────────
   var membersCache = [];
   var openMemberPanelId = null;
-
   function loadMembers() {
     fetch(API_URL + "?action=adminGetAllMembers&admin_key=" + encodeURIComponent(adminKey))
       .then(function(r) { return r.json(); })
@@ -1440,7 +1324,6 @@ function renderCodes() {
         if (data.success) { membersCache = data.members; renderMembers(); }
       });
   }
-
   function renderMembers() {
     var keyword = (document.getElementById("memberSearch").value || "").toLowerCase();
     var filtered = membersCache.filter(function(m) {
@@ -1465,13 +1348,11 @@ function renderCodes() {
     });
     html += '</table>';
     el.innerHTML = html;
-
     if (openMemberPanelId) {
       var row = document.getElementById("memberRow_" + openMemberPanelId);
       if (row) { row.style.display = ""; renderMemberPanel(openMemberPanelId); }
     }
   }
-
   function toggleMemberPanel(memberId) {
     var row = document.getElementById("memberRow_" + memberId);
     if (row.style.display === "none") {
@@ -1483,32 +1364,27 @@ function renderCodes() {
       row.style.display = "none";
     }
   }
-
   function renderMemberPanel(memberId) {
     var html = '<div class="member-panel">';
     html += '<div class="mp-box"><h5>마일리지 조정</h5>' +
       '<input type="number" id="mileageAdjAmount_' + memberId + '" placeholder="금액(차감은 마이너스로)" />' +
       '<input type="text" id="mileageAdjReason_' + memberId + '" placeholder="사유" />' +
       '<button onclick="adjustMileage(\'' + memberId + '\')">적용</button></div>';
-
     html += '<div class="mp-box"><h5>바우처 발급</h5>' +
       '<input type="text" id="voucherTitle_' + memberId + '" placeholder="혜택명 (예: 배터리 무상교환)" />' +
       '<select id="voucherType_' + memberId + '"><option value="free">무상 서비스형 (금액 없음)</option><option value="percent">할인율형</option><option value="amount">금액형</option></select>' +
       '<input type="number" id="voucherValue_' + memberId + '" placeholder="값 (할인율/금액형일 때만)" />' +
       '<select id="voucherValidMonths_' + memberId + '"><option value="6">사용기한: 발급일로부터 6개월</option><option value="12">사용기한: 발급일로부터 1년</option></select>' +
       '<button onclick="issueVoucher(\'' + memberId + '\')">발급</button></div>';
-
     html += '<div class="mp-box"><h5>결제 수동 기록</h5>' +
       '<input type="number" id="paymentAmount_' + memberId + '" placeholder="결제금액" />' +
       '<input type="text" id="paymentReason_' + memberId + '" placeholder="사유 (예: AS 수리비)" />' +
       '<button onclick="recordMemberPayment(\'' + memberId + '\')">기록</button></div>';
-
     html += '</div>';
     html += '<div id="memberCouponsList_' + memberId + '" style="margin-top:12px;"></div>';
     document.getElementById("memberPanel_" + memberId).innerHTML = html;
     loadMemberCoupons(memberId);
   }
-
   function loadMemberCoupons(memberId) {
     var params = new URLSearchParams({ action: "adminGetMemberCoupons", admin_key: adminKey, member_id: memberId });
     fetch(API_URL + "?" + params.toString())
@@ -1533,7 +1409,6 @@ function renderCodes() {
         listEl.innerHTML = html;
       });
   }
-
   function manualUseCoupon(couponId, memberId) {
     if (!confirm("이 바우처를 사용 처리할까요?")) return;
     var params = new URLSearchParams({ action: "adminUseCoupon", admin_key: adminKey, coupon_id: couponId });
@@ -1541,7 +1416,6 @@ function renderCodes() {
       .then(function(r) { return r.json(); })
       .then(function() { loadMemberCoupons(memberId); loadMembers(); });
   }
-
   function deleteCoupon(couponId, memberId) {
     if (!confirm("이 바우처를 완전히 삭제할까요? 기록이 남지 않으며 되돌릴 수 없습니다.")) return;
     var params = new URLSearchParams({ action: "adminDeleteCoupon", admin_key: adminKey, coupon_id: couponId });
@@ -1549,7 +1423,6 @@ function renderCodes() {
       .then(function(r) { return r.json(); })
       .then(function() { loadMemberCoupons(memberId); loadMembers(); });
   }
-
   function adjustMileage(memberId) {
     var amount = document.getElementById("mileageAdjAmount_" + memberId).value;
     var reason = document.getElementById("mileageAdjReason_" + memberId).value;
@@ -1562,7 +1435,6 @@ function renderCodes() {
         loadMembers();
       });
   }
-
   function issueVoucher(memberId) {
     var title = document.getElementById("voucherTitle_" + memberId).value.trim();
     var type = document.getElementById("voucherType_" + memberId).value;
@@ -1578,7 +1450,6 @@ function renderCodes() {
         loadMembers();
       });
   }
-
   function recordMemberPayment(memberId) {
     var amount = document.getElementById("paymentAmount_" + memberId).value;
     var reason = document.getElementById("paymentReason_" + memberId).value;
@@ -1591,10 +1462,8 @@ function renderCodes() {
         loadMembers();
       });
   }
-
   // ── 파트너 견적 관리 ─────────────────────────────────
   var quotesCache = [];
-
   function loadQuotesAdmin() {
     fetch(API_URL + "?action=adminGetAllQuotes&admin_key=" + encodeURIComponent(adminKey))
       .then(function(r) { return r.json(); })
@@ -1603,30 +1472,24 @@ function renderCodes() {
         renderQuotesAdmin();
       });
   }
-
   function escapeHtmlQ(s) {
     return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
   }
-
   function renderQuotesAdmin() {
     var el = document.getElementById("quotesList");
     if (quotesCache.length === 0) { el.innerHTML = '<div class="empty-msg">파트너에게 배정된 견적 건이 없습니다.</div>'; return; }
-
     var html = "";
     quotesCache.slice().reverse().forEach(function(q, idx) {
       var items = (q.ai_result && q.ai_result.items) || [];
       var isPending = q.quote_status === "제출됨";
-
       html += '<div class="panel" style="margin-bottom:14px;">';
       html += '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">';
       html += '<div><b>' + q.brand + ' ' + q.model + '</b> <span style="color:#999;font-size:11px;">' + q.request_id + ' · 수리처: ' + (q.customer_display_name || '-') + ' · 담당자: ' + (q.staff_name || '-') + '</span></div>';
       html += '<span class="status-tag ' + (isPending ? 'tag-대기중' : 'tag-승인') + '">' + q.quote_status + '</span>';
       html += '</div>';
-
       if (q.symptom) html += '<div style="font-size:12px;color:#888;margin-bottom:8px;">접수 시 증상: ' + escapeHtmlQ(q.symptom) + '</div>';
       if (q.comment) html += '<div style="background:#FFFBF0;border:1px solid #F0C040;border-radius:2px;padding:10px 12px;font-size:12px;margin-bottom:8px;"><b>COMMENT (증상/원인)</b><br>' + escapeHtmlQ(q.comment) + '</div>';
       html += '<div style="background:#fafafa;border:1px solid #eee;border-radius:2px;padding:10px 12px;font-size:12px;margin-bottom:10px;"><b>COST (담당자 원문)</b><br>' + escapeHtmlQ(q.raw_text) + '</div>';
-
       if (q.ofr_photo_url || q.watch_photo_url || q.serial_photo_url) {
         html += '<div style="display:flex; gap:8px; margin-bottom:10px;">';
         if (q.ofr_photo_url) html += '<a href="' + q.ofr_photo_url + '" target="_blank"><img src="' + q.ofr_photo_url + '" style="width:70px;height:70px;object-fit:cover;border-radius:2px;border:1px solid #ddd;" title="OFR 라벨" /></a>';
@@ -1634,7 +1497,6 @@ function renderCodes() {
         if (q.serial_photo_url) html += '<a href="' + q.serial_photo_url + '" target="_blank"><img src="' + q.serial_photo_url + '" style="width:70px;height:70px;object-fit:cover;border-radius:2px;border:1px solid #ddd;" title="시리얼" /></a>';
         html += '</div>';
       }
-
       html += '<table class="items-table">';
       html += '<tr><th>항목</th><th style="width:120px;">원가(원)</th></tr>';
       var itemRowsId = "qItems_" + idx;
@@ -1649,11 +1511,9 @@ function renderCodes() {
         }
       });
       html += '</tbody></table>';
-
       if (isPending) {
         html += '<button class="add-row-btn" style="font-size:11px;background:none;border:1px dashed #C9A84C;color:#C9A84C;padding:6px 12px;border-radius:2px;cursor:pointer;margin-bottom:10px;" onclick="addQuoteItemRow(' + idx + ')">+ 항목 추가</button>';
       }
-
       html += '<div class="items-panel" style="margin-top:6px;">';
       html += '<div class="billing-edit" style="justify-content:space-between; font-size:12px;">';
       html += '<span>원가 합계 (파트너 정산 기준)</span><span id="qCost_' + idx + '" style="font-weight:600;">' + (parseInt(q.confirmed_cost_amount)||items.reduce(function(s,it){return s+(parseInt(it.cost)||0);},0)).toLocaleString("ko-KR") + '원</span>';
@@ -1662,7 +1522,6 @@ function renderCodes() {
       html += '<span>사용자 청구금액 (공급가×1.2 + 부가세10%)</span><span id="qCharge_' + idx + '" style="font-weight:700; color:#C9A84C;">' + (parseInt(q.charge_amount)||0).toLocaleString("ko-KR") + '원</span>';
       html += '</div>';
       html += '</div>';
-
       if (isPending) {
         html += '<div class="field" style="margin-top:10px;">';
         html += '<label style="font-size:11px; color:#888; display:block; margin-bottom:4px;">고객 안내 코멘트 (선택 · 확정 시 고객 마이페이지에 노출됩니다)</label>';
@@ -1672,12 +1531,10 @@ function renderCodes() {
       } else if (q.customer_comment) {
         html += '<div style="background:#FFFBF0;border:1px solid #F0C040;border-radius:2px;padding:10px 12px;font-size:12px;margin-top:10px;"><b>고객 안내 코멘트</b><br>' + escapeHtmlQ(q.customer_comment) + '</div>';
       }
-
       html += '</div>';
     });
     el.innerHTML = html;
   }
-
   function addQuoteItemRow(idx) {
     var tbody = document.getElementById("qItems_" + idx);
     var newItemIdx = tbody.querySelectorAll("tr").length;
@@ -1687,7 +1544,6 @@ function renderCodes() {
       '<td><input type="number" value="0" data-idx="' + idx + '" data-field="cost" data-item="' + newItemIdx + '" oninput="recalcQuote(' + idx + ')" style="text-align:right;" /></td>';
     tbody.appendChild(tr);
   }
-
   function getQuoteItems(idx) {
     var tbody = document.getElementById("qItems_" + idx);
     var rows = tbody.querySelectorAll("tr");
@@ -1701,7 +1557,6 @@ function renderCodes() {
     });
     return items;
   }
-
   function recalcQuote(idx) {
     var items = getQuoteItems(idx);
     var totalCost = items.reduce(function(s, it) { return s + it.cost; }, 0);
@@ -1713,7 +1568,6 @@ function renderCodes() {
     if (costEl) costEl.textContent = totalCost.toLocaleString("ko-KR") + "원";
     if (chargeEl) chargeEl.textContent = charge.toLocaleString("ko-KR") + "원";
   }
-
   function confirmQuoteAdmin(idx) {
     var q = quotesCache.slice().reverse()[idx];
     var items = getQuoteItems(idx);
@@ -1734,11 +1588,9 @@ function renderCodes() {
       })
       .catch(function() { alert("오류가 발생했습니다."); });
   }
-
   // ── FAQ 관리 ─────────────────────────────────────────
   var faqCache = [];
   var editingFaqId = null;
-
   function loadFaqAdmin() {
     fetch(API_URL + "?action=adminGetAllFAQ&admin_key=" + encodeURIComponent(adminKey))
       .then(function(r) { return r.json(); })
@@ -1747,7 +1599,6 @@ function renderCodes() {
         renderFaqAdmin();
       });
   }
-
   function renderFaqAdmin() {
     var el = document.getElementById("faqList");
     if (faqCache.length === 0) { el.innerHTML = '<div class="empty-msg">등록된 FAQ가 없습니다.</div>'; return; }
@@ -1774,19 +1625,16 @@ function renderCodes() {
     });
     el.innerHTML = html;
   }
-
   function toggleFaqForm() {
     var area = document.getElementById("faqFormArea");
     if (area.innerHTML) { area.innerHTML = ""; editingFaqId = null; return; }
     renderFaqForm(null);
   }
-
   function editFaq(faqId) {
     var f = faqCache.find(function(x) { return x.faq_id === faqId; });
     if (!f) return;
     renderFaqForm(f);
   }
-
   function renderFaqForm(f) {
     editingFaqId = f ? f.faq_id : null;
     var area = document.getElementById("faqFormArea");
@@ -1802,7 +1650,6 @@ function renderCodes() {
       '<button class="btn-main" onclick="saveFaq()">' + (f ? '수정 저장' : '등록') + '</button>' +
       '</div>';
   }
-
   function saveFaq() {
     var category = document.getElementById("faq_category").value.trim();
     var question = document.getElementById("faq_question").value.trim();
@@ -1825,7 +1672,6 @@ function renderCodes() {
         } else { alert(data.message); }
       });
   }
-
   function deleteFaq(faqId) {
     if (!confirm("이 FAQ를 삭제할까요?")) return;
     fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "adminDeleteFAQ", admin_key: adminKey, faq_id: faqId }) })
