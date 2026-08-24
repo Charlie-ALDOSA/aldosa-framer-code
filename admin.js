@@ -1658,13 +1658,19 @@ function renderCodes() {
       html += '<div class="billing-edit" style="justify-content:space-between; font-size:12px;">';
       html += '<span>원가 합계 (파트너 정산 기준)</span><span id="qCost_' + idx + '" style="font-weight:600;">' + (parseInt(q.confirmed_cost_amount)||items.reduce(function(s,it){return s+(parseInt(it.cost)||0);},0)).toLocaleString("ko-KR") + '원</span>';
       html += '</div>';
-      html += '<div class="billing-edit" style="justify-content:space-between; font-size:13px; margin-top:4px;">';
+           html += '<div class="billing-edit" style="justify-content:space-between; font-size:13px; margin-top:4px;">';
       html += '<span>사용자 청구금액 (공급가×1.2 + 부가세10%)</span><span id="qCharge_' + idx + '" style="font-weight:700; color:#C9A84C;">' + (parseInt(q.charge_amount)||0).toLocaleString("ko-KR") + '원</span>';
       html += '</div>';
       html += '</div>';
 
       if (isPending) {
+        html += '<div class="field" style="margin-top:10px;">';
+        html += '<label style="font-size:11px; color:#888; display:block; margin-bottom:4px;">고객 안내 코멘트 (선택 · 확정 시 고객 마이페이지에 노출됩니다)</label>';
+        html += '<textarea id="customerComment_' + idx + '" placeholder="예: 배터리 자연 소모로 교체 필요합니다. 방수 테스트도 함께 진행됩니다." style="width:100%; min-height:54px; padding:8px 10px; font-size:12px; font-family:inherit; border:1px solid #ddd; border-radius:2px; resize:vertical;">' + escapeHtmlQ(q.customer_comment || "") + '</textarea>';
+        html += '</div>';
         html += '<button class="btn-main" onclick="confirmQuoteAdmin(' + idx + ')">이 견적으로 확정</button>';
+      } else if (q.customer_comment) {
+        html += '<div style="background:#FFFBF0;border:1px solid #F0C040;border-radius:2px;padding:10px 12px;font-size:12px;margin-top:10px;"><b>고객 안내 코멘트</b><br>' + escapeHtmlQ(q.customer_comment) + '</div>';
       }
 
       html += '</div>';
@@ -1712,9 +1718,12 @@ function renderCodes() {
     var q = quotesCache.slice().reverse()[idx];
     var items = getQuoteItems(idx);
     if (items.length === 0) { alert("최소 1개 항목이 필요합니다."); return; }
+    var commentInput = document.getElementById("customerComment_" + idx);
+    var customerComment = commentInput ? commentInput.value.trim() : "";
     var params = new URLSearchParams({
       action: "adminConfirmQuote", admin_key: adminKey, request_id: q.request_id,
-      items_json: JSON.stringify(items), source: "AI추출+관리자확정"
+      items_json: JSON.stringify(items), source: "AI추출+관리자확정",
+      customer_comment: customerComment
     });
     fetch(API_URL + "?" + params.toString())
       .then(function(r) { return r.json(); })
