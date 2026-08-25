@@ -598,6 +598,7 @@ var previewVat = Math.round(total * 0.1);
     html += '</div>';
     html += '<button class="btn-main" onclick="addASItem(\'' + requestId + '\')">항목 추가</button>';
     html += '<button class="btn-apply-total" onclick="applyItemsTotal(\'' + requestId + '\',' + total + ')">항목 합계에 부가세 반영하여 청구금액 산출 (' + previewCharge.toLocaleString("ko-KR") + '원)</button>';
+    html += '<button class="btn-apply-total" style="background:#1a1a1a;" onclick="printRepairDocument(\'' + requestId + '\')">견적서/청구서/내역서 인쇄</button>';
     html += '</div>';
     document.getElementById("itemsPanel_" + requestId).innerHTML = html;
   }
@@ -639,6 +640,89 @@ function applyItemsTotal(requestId, total) {
     if (quoteInput) quoteInput.value = total;
     if (chargeInput) chargeInput.value = charge;
     saveBilling(requestId);
+  }
+
+  // ── 견적서/청구서/내역서 인쇄 ─────────────────────────
+  function printRepairDocument(requestId) {
+    var r = asListCache.find(function(x) { return x.request_id === requestId; }) || {};
+    var items = asItemsCache[requestId] || [];
+    var total = items.reduce(function(sum, it) { return sum + (parseInt(it.cost) || 0); }, 0);
+    var vat = Math.round(total * 0.1);
+    var charge = total + vat;
+    var commentEl = document.getElementById("customerComment_" + requestId);
+    var commentText = commentEl ? commentEl.value.trim() : (r.customer_comment || "");
+
+    var itemRows = "";
+    items.forEach(function(it) {
+      itemRows += "<tr><td>" + it.item_name + "</td><td>" + (it.note || "-") + "</td><td>" + (parseInt(it.cost)||0).toLocaleString("ko-KR") + "원</td></tr>";
+    });
+    if (items.length === 0) {
+      itemRows = '<tr><td colspan="3" style="text-align:center;color:#bbb;">등록된 항목이 없습니다.</td></tr>';
+    }
+
+    var todayStr = formatDate(new Date().toISOString());
+
+    var html = "" +
+      "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>ALDOSA 수리 문서</title><style>" +
+      "body{font-family:'Helvetica Neue',Arial,'Apple SD Gothic Neo',sans-serif;color:#1a1a1a;padding:40px;max-width:720px;margin:0 auto;}" +
+      ".no-print{margin-bottom:20px;display:flex;gap:8px;align-items:center;}" +
+      ".no-print select{padding:8px 10px;font-size:13px;} .no-print button{padding:8px 16px;font-size:13px;background:#C9A84C;color:#fff;border:none;border-radius:2px;cursor:pointer;}" +
+      ".doc-header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #1a1a1a;padding-bottom:16px;margin-bottom:24px;}" +
+      ".brand{font-size:16px;font-weight:300;letter-spacing:0.3em;}" +
+      ".doc-title{font-size:22px;font-weight:700;margin-top:6px;}" +
+      ".doc-meta{font-size:12px;color:#666;text-align:right;line-height:1.8;}" +
+      ".info-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;font-size:13px;margin-bottom:24px;}" +
+      ".info-grid span{color:#888;margin-right:6px;}" +
+      "table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px;}" +
+      "th,td{padding:8px;border-bottom:1px solid #eee;text-align:left;}" +
+      "th{color:#888;font-size:11px;text-transform:uppercase;}" +
+      "td:last-child,th:last-child{text-align:right;}" +
+      ".totals{margin-left:auto;width:260px;font-size:13px;}" +
+      ".totals div{display:flex;justify-content:space-between;padding:4px 0;}" +
+      ".totals .grand{font-size:16px;font-weight:700;border-top:2px solid #1a1a1a;margin-top:6px;padding-top:8px;}" +
+      ".comment-box{background:#FFFBF0;border:1px solid #F0C040;padding:12px 14px;font-size:12.5px;margin-bottom:24px;border-radius:2px;}" +
+     ".notice{font-size:12px;color:#555;border-top:1px solid #ddd;padding-top:16px;margin-top:32px;line-height:1.8;}" +
+      ".biz-footer{font-size:10px;color:#999;line-height:1.6;border-top:1px solid #eee;padding-top:12px;margin-top:16px;}" +
+      "@media print{.no-print{display:none;}}" +
+      "</style></head><body>" +
+      "<div class='no-print'>" +
+      "<select id='docType' onchange='updateDoc()'>" +
+      "<option value='견적서'>견적서</option>" +
+      "<option value='청구서' selected>청구서</option>" +
+      "<option value='내역서'>내역서</option>" +
+      "</select>" +
+      "<button onclick='window.print()'>인쇄</button>" +
+      "</div>" +
+      "<div class='doc-header'>" +
+      "<div><div class='brand'>ALDOSA</div><div class='doc-title' id='docTitleText'>청구서</div></div>" +
+      "<div class='doc-meta'>접수번호: " + (r.request_id || "-") + (r.ofr_number ? "<br>OFR: " + r.ofr_number : "") + "<br>발행일: " + todayStr + "</div>" +
+      "</div>" +
+      "<div class='info-grid'>" +
+      "<div><span>의뢰인</span>" + (r.intake_name || "-") + "</div>" +
+      "<div><span>연락처</span>" + (r.intake_phone || "-") + "</div>" +
+      "<div><span>브랜드/모델</span>" + (r.brand || "-") + " " + (r.model || "") + "</div>" +
+      "<div><span>시리얼</span>" + (r.serial || "-") + "</div>" +
+      "</div>" +
+      "<table><tr><th>항목</th><th>비고</th><th>비용</th></tr>" + itemRows + "</table>" +
+      "<div class='totals'>" +
+      "<div><span>항목 합계</span><span>" + total.toLocaleString("ko-KR") + "원</span></div>" +
+      "<div><span>부가세(10%)</span><span>" + vat.toLocaleString("ko-KR") + "원</span></div>" +
+      "<div class='grand'><span>합계금액</span><span>" + charge.toLocaleString("ko-KR") + "원</span></div>" +
+      "</div>" +
+      (commentText ? "<div class='comment-box'><b>안내사항</b><br>" + commentText + "</div>" : "") +
+    "<div class='notice' id='docNoticeText'></div>" +
+      "<div class='biz-footer'>(주)레어바이블루 · 대표자 김경순 · 사업자등록번호 191-81-02021 · 통신판매업신고번호 2022-서울강남-06312<br>서울 강남구 테헤란로 82길 15, 3층 55호 (대치동, 디아이타워) · 02-6349-0770 · aldosa.official@gmail.com</div>" +
+      "<script>" +
+      "var NOTICES={'견적서':'상기 내용은 수리 예정에 대한 예상 비용으로, 실제 진행 시 변경될 수 있습니다.','청구서':'상기 내역으로 수리 확정되어 비용을 청구합니다.','내역서':'상기 내역으로 수리 완료되었음을 확인합니다.'};" +
+      "function updateDoc(){var v=document.getElementById('docType').value;document.getElementById('docTitleText').textContent=v;document.getElementById('docNoticeText').textContent=NOTICES[v];}" +
+      "updateDoc();" +
+      "<\/script>" +
+      "</body></html>";
+
+    var win = window.open("", "_blank");
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
   }
   // ── 시리얼 보완 ──────────────────────────────────────
   var CLOUDINARY_CLOUD_NAME = "dztigbzcp";
