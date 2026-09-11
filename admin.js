@@ -411,9 +411,13 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       (historyText ? '<div style="font-size:9.5px;color:#999;margin-top:3px;">' + historyText + '</div>' : '') +
       '</div>';
   }
-    return '<div style="margin-top:6px;"><button class="btn-sm" style="background:#fff;border:1px solid #E11D48;color:#E11D48;" onclick="sendPaymentReminder(\'' + r.request_id + '\')">결제 재알림</button></div>';
+   
+    return '<div style="margin-top:6px;"><button class="btn-sm" style="background:#fff;border:1px solid #E11D48;color:#E11D48;" onclick="sendPaymentReminder(\'' + r.request_id + '\')">결제 재알림</button>' +
+      (historyText ? '<div style="font-size:9.5px;color:#999;margin-top:3px;">' + historyText + '</div>' : '') +
+      '</div>';
   }
   function sendPaymentReminder(requestId) {
+
     if (!confirm("결제 재알림 문자를 발송하시겠습니까?\n(결제 재촉 + 서비스 중단 안내 + 무통장입금 안내 + 무상수리/이력관리 제외 안내 포함)")) return;
     var params = new URLSearchParams({ action: "adminSendPaymentReminder", admin_key: adminKey, request_id: requestId });
     fetch(API_URL + "?" + params.toString())
