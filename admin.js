@@ -400,10 +400,17 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
     return "";
   }
   function renderPaymentReminderButton(r) {
-    if (!r.stage_notified || !r.order_id) return "";
-    if (r.order_status === "결제완료") {
+    if (!r.stage_notified) return "";
+    if (r.stage_paid) {
       return '<div style="margin-top:6px;"><button class="btn-sm" disabled style="background:#f5f5f5;border:1px solid #eee;color:#ccc;cursor:default;">결제 재알림</button></div>';
     }
+    var historyText = (r.payment_reminder_count > 0)
+      ? ('발송 ' + r.payment_reminder_count + '회 · 최근 ' + formatDateTime(r.payment_reminder_last_sent))
+      : '';
+    return '<div style="margin-top:6px;"><button class="btn-sm" style="background:#fff;border:1px solid #E11D48;color:#E11D48;" onclick="sendPaymentReminder(\'' + r.request_id + '\')">결제 재알림</button>' +
+      (historyText ? '<div style="font-size:9.5px;color:#999;margin-top:3px;">' + historyText + '</div>' : '') +
+      '</div>';
+  }
     return '<div style="margin-top:6px;"><button class="btn-sm" style="background:#fff;border:1px solid #E11D48;color:#E11D48;" onclick="sendPaymentReminder(\'' + r.request_id + '\')">결제 재알림</button></div>';
   }
   function sendPaymentReminder(requestId) {
@@ -411,7 +418,7 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
     var params = new URLSearchParams({ action: "adminSendPaymentReminder", admin_key: adminKey, request_id: requestId });
     fetch(API_URL + "?" + params.toString())
       .then(function(r) { return r.json(); })
-      .then(function(data) { alert(data.message || (data.success ? "발송되었습니다." : "발송에 실패했습니다.")); })
+      .then(function(data) { alert(data.message || (data.success ? "발송되었습니다." : "발송에 실패했습니다.")); loadASManage(); })
       .catch(function() { alert("오류가 발생했습니다."); });
   }
 
