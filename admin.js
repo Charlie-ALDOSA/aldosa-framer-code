@@ -407,11 +407,7 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
     var historyText = (r.payment_reminder_count > 0)
       ? ('발송 ' + r.payment_reminder_count + '회 · 최근 ' + formatDateTime(r.payment_reminder_last_sent))
       : '';
-    return '<div style="margin-top:6px;"><button class="btn-sm" style="background:#fff;border:1px solid #E11D48;color:#E11D48;" onclick="sendPaymentReminder(\'' + r.request_id + '\')">결제 재알림</button>' +
-      (historyText ? '<div style="font-size:9.5px;color:#999;margin-top:3px;">' + historyText + '</div>' : '') +
-      '</div>';
-  }
-   
+    
     return '<div style="margin-top:6px;"><button class="btn-sm" style="background:#fff;border:1px solid #E11D48;color:#E11D48;" onclick="sendPaymentReminder(\'' + r.request_id + '\')">결제 재알림</button>' +
       (historyText ? '<div style="font-size:9.5px;color:#999;margin-top:3px;">' + historyText + '</div>' : '') +
       '</div>';
