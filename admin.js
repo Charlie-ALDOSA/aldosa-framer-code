@@ -437,7 +437,8 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       el.innerHTML = '<div class="empty-msg">출고 대기중인 건이 없습니다.</div>';
       return;
     }
-    var html = '<table class="code-table"><tr><th><input type="checkbox" onclick="toggleAllShipments(this)" /></th><th>임시번호</th><th>브랜드/모델</th><th>의뢰인</th><th>연락처</th></tr>';
+   
+  var html = '<table class="code-table"><tr><th><input type="checkbox" onclick="toggleAllShipments(this)" /></th><th>임시번호</th><th>브랜드/모델</th><th>의뢰인</th><th>연락처</th><th>발송지</th></tr>';
     shipmentListCache.forEach(function(r) {
       html += '<tr>';
       html += '<td><input type="checkbox" class="shipment-check" value="' + r.request_id + '" /></td>';
@@ -445,6 +446,7 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       html += '<td>' + r.brand + ' ' + (r.model||'') + '</td>';
       html += '<td>' + (r.intake_name||'-') + '</td>';
       html += '<td>' + (r.intake_phone||'-') + '</td>';
+      html += '<td>' + (r.store_name||'-') + '</td>';
       html += '</tr>';
     });
     html += '</table>';
