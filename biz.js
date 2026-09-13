@@ -88,7 +88,25 @@ infoAddress: document.getElementById("bizInfoAddress"),
 infoContactPhone: document.getElementById("bizInfoContactPhone"),
 infoContactEmail: document.getElementById("bizInfoContactEmail"),
 profileEditBtn: document.getElementById("bizProfileEditBtn"),
-profileResult: document.getElementById("bizProfileResult")
+profileResult: document.getElementById("bizProfileResult"),
+memberModal: document.getElementById("bizMemberModal"),
+memberModalCloseBtn: document.getElementById("bizMemberModalCloseBtn"),
+memberModalName: document.getElementById("bizMemberModalName"),
+memberModalBalance: document.getElementById("bizMemberModalBalance"),
+memberModalResult: document.getElementById("bizMemberModalResult"),
+memberVoucherTbody: document.getElementById("bizMemberVoucherTbody"),
+memberMileageTbody: document.getElementById("bizMemberMileageTbody"),
+mileageAmount: document.getElementById("bizMileageAmount"),
+mileageReason: document.getElementById("bizMileageReason"),
+mileageSubmitBtn: document.getElementById("bizMileageSubmitBtn"),
+voucherType: document.getElementById("bizVoucherType"),
+voucherValue: document.getElementById("bizVoucherValue"),
+voucherTitle: document.getElementById("bizVoucherTitle"),
+voucherMonths: document.getElementById("bizVoucherMonths"),
+voucherSubmitBtn: document.getElementById("bizVoucherSubmitBtn"),
+paymentAmount: document.getElementById("bizPaymentAmount"),
+paymentReason: document.getElementById("bizPaymentReason"),
+paymentSubmitBtn: document.getElementById("bizPaymentSubmitBtn")
 };
 
 var session = null;
@@ -96,6 +114,7 @@ var pendingLoginPassword = "";
 var pinned = { customer: false, platform: false };
 var dashboardCache = null;
 var shipmentListCache = [];
+var currentModalMemberId = "";
 
 function showView(name) {
 els.loginView.hidden = name !== "login";
@@ -295,8 +314,128 @@ return "";
 // ── 렌더링 ───────────────────────────────────────────
 function renderCustomers(list) {
 els.assetCustTbody.innerHTML = list.map(function (r) {
-return "<tr><td>" + esc(r.name) + "</td><td>" + esc(r.asset) + "</td><td>" + fmtDate(r.registered_at) + "</td></tr>";
-}).join("") || "<tr><td colspan='3' class='biz-empty-cell'>등록된 고객·자산 내역이 없습니다.</td></tr>";
+return "<tr><td>" + esc(r.name) + "</td><td>" + esc(r.asset) + "</td><td>" + fmtDate(r.registered_at) + "</td>" +
+"<td>" + (r.member_id ? "<button type='button' class='biz-btn-link' data-member-id='" + esc(r.member_id) + "' data-member-name='" + esc(r.name) + "'>관리</button>" : "") + "</td></tr>";
+}).join("") || "<tr><td colspan='4' class='biz-empty-cell'>등록된 고객·자산 내역이 없습니다.</td></tr>";
+}
+
+// ── 고객 관리 모달 (마일리지/바우처/결제) ──────────────
+function openMemberModal(memberId, name) {
+currentModalMemberId = memberId;
+els.memberModalName.textContent = name || "-";
+els.memberModalBalance.textContent = "-";
+els.memberModalResult.hidden = true;
+els.mileageAmount.value = "";
+els.mileageReason.value = "";
+els.voucherValue.value = "";
+els.voucherTitle.value = "";
+els.voucherMonths.value = "";
+els.paymentAmount.value = "";
+els.paymentReason.value = "";
+els.memberVoucherTbody.innerHTML = "<tr><td colspan='4' class='biz-empty-cell'>불러오는 중...</td></tr>";
+els.memberMileageTbody.innerHTML = "";
+els.memberModal.hidden = false;
+loadMemberDetail(memberId);
+}
+
+function closeMemberModal() {
+els.memberModal.hidden = true;
+currentModalMemberId = "";
+}
+
+function loadMemberDetail(memberId) {
+callApi({ action: "enterpriseGetMemberDetail", enterprise_id: session.enterprise_id, member_id: memberId }).then(function (res) {
+if (!res.success) {
+els.memberVoucherTbody.innerHTML = "<tr><td colspan='4' class='biz-empty-cell'>불러오지 못했습니다.</td></tr>";
+return;
+}
+els.memberModalBalance.textContent = res.mileage_balance != null ? res.mileage_balance : "-";
+renderMemberVouchers(res.coupons || []);
+renderMemberMileage(res.mileage_history || []);
+});
+}
+
+function renderMemberVouchers(list) {
+els.memberVoucherTbody.innerHTML = list.map(function (c) {
+var valueText = c.type === "percent" ? (c.value + "%") : (Number(c.value).toLocaleString() + "원");
+return "<tr><td>" + esc(c.title || c.code) + "</td><td>" + esc(valueText) + "</td><td>" + esc(c.status) + "</td><td>" + fmtDate(c.expire_date) + "</td></tr>";
+}).join("") || "<tr><td colspan='4' class='biz-empty-cell'>발급된 바우처가 없습니다.</td></tr>";
+}
+
+function renderMemberMileage(list) {
+els.memberMileageTbody.innerHTML = list.map(function (h) {
+return "<tr><td>" + esc(h.type) + "</td><td>" + esc(h.amount) + "</td><td>" + esc(h.reason || "-") + "</td><td>" + fmtDate(h.created_at) + "</td></tr>";
+}).join("") || "<tr><td colspan='4' class='biz-empty-cell'>마일리지 내역이 없습니다.</td></tr>";
+}
+
+function showMemberModalResult(msg) {
+els.memberModalResult.hidden = false;
+els.memberModalResult.textContent = msg;
+}
+
+function submitMileageAdjust() {
+var amount = parseInt(els.mileageAmount.value, 10);
+if (!amount) { showMemberModalResult("조정할 마일리지 값을 입력해주세요."); return; }
+els.mileageSubmitBtn.disabled = true;
+callApi({
+action: "enterpriseAdjustMileage", enterprise_id: session.enterprise_id, member_id: currentModalMemberId,
+amount: amount, reason: els.mileageReason.value
+}).then(function (res) {
+els.mileageSubmitBtn.disabled = false;
+showMemberModalResult(res.success ? ("마일리지가 조정되었습니다. (현재 잔액 " + res.balance + "P)") : (res.message || "처리에 실패했습니다."));
+if (res.success) {
+els.memberModalBalance.textContent = res.balance;
+els.mileageAmount.value = "";
+els.mileageReason.value = "";
+loadMemberDetail(currentModalMemberId);
+}
+}).catch(function () {
+els.mileageSubmitBtn.disabled = false;
+showMemberModalResult("네트워크 오류가 발생했습니다.");
+});
+}
+
+function submitVoucherIssue() {
+var value = els.voucherValue.value;
+if (!value) { showMemberModalResult("바우처 값을 입력해주세요."); return; }
+els.voucherSubmitBtn.disabled = true;
+callApi({
+action: "enterpriseIssueVoucher", enterprise_id: session.enterprise_id, member_id: currentModalMemberId,
+type: els.voucherType.value, value: value, title: els.voucherTitle.value, valid_months: els.voucherMonths.value
+}).then(function (res) {
+els.voucherSubmitBtn.disabled = false;
+showMemberModalResult(res.success ? "바우처가 발급되었습니다." : (res.message || "처리에 실패했습니다."));
+if (res.success) {
+els.voucherValue.value = "";
+els.voucherTitle.value = "";
+els.voucherMonths.value = "";
+loadMemberDetail(currentModalMemberId);
+}
+}).catch(function () {
+els.voucherSubmitBtn.disabled = false;
+showMemberModalResult("네트워크 오류가 발생했습니다.");
+});
+}
+
+function submitPaymentRecord() {
+var amount = els.paymentAmount.value;
+if (!amount) { showMemberModalResult("결제금액을 입력해주세요."); return; }
+els.paymentSubmitBtn.disabled = true;
+callApi({
+action: "enterpriseRecordPayment", enterprise_id: session.enterprise_id, member_id: currentModalMemberId,
+amount: amount, reason: els.paymentReason.value
+}).then(function (res) {
+els.paymentSubmitBtn.disabled = false;
+showMemberModalResult(res.success ? "결제가 기록되었습니다." : (res.message || "처리에 실패했습니다."));
+if (res.success) {
+els.paymentAmount.value = "";
+els.paymentReason.value = "";
+loadMemberDetail(currentModalMemberId);
+}
+}).catch(function () {
+els.paymentSubmitBtn.disabled = false;
+showMemberModalResult("네트워크 오류가 발생했습니다.");
+});
 }
 
 function renderAS(list) {
@@ -441,6 +580,19 @@ els.profileEditBtn.addEventListener("click", function () {
 els.profileResult.hidden = false;
 els.profileResult.textContent = "정보 수정 기능은 준비 중입니다. 변경이 필요하시면 위 문의하기 메뉴를 이용해주세요.";
 });
+
+els.assetCustTbody.addEventListener("click", function (e) {
+var btn = e.target.closest("[data-member-id]");
+if (!btn) return;
+openMemberModal(btn.getAttribute("data-member-id"), btn.getAttribute("data-member-name"));
+});
+els.memberModalCloseBtn.addEventListener("click", closeMemberModal);
+els.memberModal.addEventListener("click", function (e) {
+if (e.target === els.memberModal) closeMemberModal();
+});
+els.mileageSubmitBtn.addEventListener("click", submitMileageAdjust);
+els.voucherSubmitBtn.addEventListener("click", submitVoucherIssue);
+els.paymentSubmitBtn.addEventListener("click", submitPaymentRecord);
 
 if (!restoreSession()) showView("login");
 })();
