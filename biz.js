@@ -106,7 +106,35 @@ voucherMonths: document.getElementById("bizVoucherMonths"),
 voucherSubmitBtn: document.getElementById("bizVoucherSubmitBtn"),
 paymentAmount: document.getElementById("bizPaymentAmount"),
 paymentReason: document.getElementById("bizPaymentReason"),
-paymentSubmitBtn: document.getElementById("bizPaymentSubmitBtn")
+paymentSubmitBtn: document.getElementById("bizPaymentSubmitBtn"),
+asModal: document.getElementById("bizAsModal"),
+asModalCloseBtn: document.getElementById("bizAsModalCloseBtn"),
+asModalTitle: document.getElementById("bizAsModalTitle"),
+asModalMeta: document.getElementById("bizAsModalMeta"),
+asStageResult: document.getElementById("bizAsStageResult"),
+asQuoteAmount: document.getElementById("bizAsQuoteAmount"),
+asChargeAmount: document.getElementById("bizAsChargeAmount"),
+asBillingSaveBtn: document.getElementById("bizAsBillingSaveBtn"),
+asBillingResult: document.getElementById("bizAsBillingResult"),
+asItemTbody: document.getElementById("bizAsItemTbody"),
+asItemName: document.getElementById("bizAsItemName"),
+asItemCost: document.getElementById("bizAsItemCost"),
+asItemNote: document.getElementById("bizAsItemNote"),
+asItemAddBtn: document.getElementById("bizAsItemAddBtn"),
+asItemResult: document.getElementById("bizAsItemResult"),
+asPartnerSelect: document.getElementById("bizAsPartnerSelect"),
+asPartnerAssignBtn: document.getElementById("bizAsPartnerAssignBtn"),
+asPartnerCurrent: document.getElementById("bizAsPartnerCurrent"),
+asPartnerResult: document.getElementById("bizAsPartnerResult"),
+asSerialInput: document.getElementById("bizAsSerialInput"),
+asSerialBtn: document.getElementById("bizAsSerialBtn"),
+asSerialResult: document.getElementById("bizAsSerialResult"),
+asNoteTbody: document.getElementById("bizAsNoteTbody"),
+asNoteInput: document.getElementById("bizAsNoteInput"),
+asNoteAddBtn: document.getElementById("bizAsNoteAddBtn"),
+asNoteResult: document.getElementById("bizAsNoteResult"),
+asReminderBtn: document.getElementById("bizAsReminderBtn"),
+asReminderResult: document.getElementById("bizAsReminderResult")
 };
 
 var session = null;
@@ -115,6 +143,9 @@ var pinned = { customer: false, platform: false };
 var dashboardCache = null;
 var shipmentListCache = [];
 var currentModalMemberId = "";
+var asListCache = [];
+var currentAsRequestId = "";
+var repairPartnersCache = [];
 
 function showView(name) {
 els.loginView.hidden = name !== "login";
@@ -438,10 +469,227 @@ showMemberModalResult("네트워크 오류가 발생했습니다.");
 });
 }
 
+// ── AS 상세보기 모달 (스테이지/견적/수리처배정/시리얼/CS메모/결제재알림) ──
+var STAGE_LABELS = { received: "접수완료", quoted: "견적완료", notified: "안내완료", paid: "입금완료", repaired: "수리완료", shipped: "출고완료" };
+
+function openAsModal(requestId) {
+currentAsRequestId = requestId;
+var cached = asListCache.filter(function (r) { return r.request_id === requestId; })[0];
+els.asModalTitle.textContent = cached ? ((cached.brand + " " + cached.model).trim() + " (" + requestId + ")") : requestId;
+els.asModalMeta.textContent = "불러오는 중...";
+els.asStageResult.hidden = true;
+els.asBillingResult.hidden = true;
+els.asItemResult.hidden = true;
+els.asPartnerResult.hidden = true;
+els.asSerialResult.hidden = true;
+els.asNoteResult.hidden = true;
+els.asReminderResult.hidden = true;
+els.asSerialInput.value = "";
+els.asNoteInput.value = "";
+els.asItemName.value = "";
+els.asItemCost.value = "";
+els.asItemNote.value = "";
+document.querySelectorAll("#biz-app .biz-stage-btn").forEach(function (b) { b.classList.remove("biz-stage-done"); });
+els.asModal.hidden = false;
+loadAsDetail(requestId);
+loadAsItems(requestId);
+loadAsNotes(requestId);
+loadRepairPartners();
+}
+
+function closeAsModal() {
+els.asModal.hidden = true;
+currentAsRequestId = "";
+}
+
+function loadAsDetail(requestId) {
+callApi({ action: "enterpriseGetASDetail", enterprise_id: session.enterprise_id, request_id: requestId }).then(function (res) {
+if (!res.success) {
+els.asModalMeta.textContent = res.message || "불러오지 못했습니다.";
+return;
+}
+els.asModalMeta.textContent = "접수매장: " + (res.store_name || "-") + " · 의뢰인: " + (res.intake_name || "-") + " (" + (res.intake_phone || "-") + ") · 접수일: " + fmtDate(res.requested_at) + " · 시리얼: " + (res.serial || "미등록");
+document.querySelectorAll("#biz-app .biz-stage-btn").forEach(function (b) {
+var stage = b.getAttribute("data-stage");
+b.classList.toggle("biz-stage-done", !!res["stage_" + stage]);
+});
+els.asQuoteAmount.value = res.quote_amount || "";
+els.asChargeAmount.value = res.charge_amount || "";
+els.asPartnerCurrent.textContent = res.current_partner_name ? ("현재 배정: " + res.current_partner_name) : "배정된 수리처가 없습니다.";
+if (res.current_partner_id) els.asPartnerSelect.value = res.current_partner_id;
+});
+}
+
+function toggleStage(stage, btn) {
+var isDone = btn.classList.contains("biz-stage-done");
+btn.disabled = true;
+callApi({
+action: "enterpriseUpdateASStage", enterprise_id: session.enterprise_id, request_id: currentAsRequestId,
+stage: stage, clear: isDone ? "true" : "false"
+}).then(function (res) {
+btn.disabled = false;
+els.asStageResult.hidden = false;
+els.asStageResult.textContent = res.message || (res.success ? "처리되었습니다." : "처리에 실패했습니다.");
+if (res.success) {
+btn.classList.toggle("biz-stage-done", !isDone);
+loadDashboard();
+}
+}).catch(function () {
+btn.disabled = false;
+els.asStageResult.hidden = false;
+els.asStageResult.textContent = "네트워크 오류가 발생했습니다.";
+});
+}
+
+function submitBilling() {
+els.asBillingSaveBtn.disabled = true;
+callApi({
+action: "enterpriseUpdateASBilling", enterprise_id: session.enterprise_id, request_id: currentAsRequestId,
+quote_amount: els.asQuoteAmount.value, charge_amount: els.asChargeAmount.value
+}).then(function (res) {
+els.asBillingSaveBtn.disabled = false;
+els.asBillingResult.hidden = false;
+els.asBillingResult.textContent = res.message || (res.success ? "저장되었습니다." : "저장에 실패했습니다.");
+}).catch(function () {
+els.asBillingSaveBtn.disabled = false;
+els.asBillingResult.hidden = false;
+els.asBillingResult.textContent = "네트워크 오류가 발생했습니다.";
+});
+}
+
+function loadAsItems(requestId) {
+els.asItemTbody.innerHTML = "<tr><td colspan='4' class='biz-empty-cell'>불러오는 중...</td></tr>";
+callApi({ action: "enterpriseGetASItems", enterprise_id: session.enterprise_id, request_id: requestId }).then(function (res) {
+if (!res.success) { els.asItemTbody.innerHTML = "<tr><td colspan='4' class='biz-empty-cell'>불러오지 못했습니다.</td></tr>"; return; }
+renderAsItems(res.items || []);
+});
+}
+
+function renderAsItems(list) {
+els.asItemTbody.innerHTML = list.map(function (it) {
+return "<tr><td>" + esc(it.item_name) + "</td><td>" + Number(it.cost || 0).toLocaleString() + "원</td><td>" + esc(it.note || "-") + "</td>" +
+"<td><button type='button' class='biz-btn-link biz-btn-link-danger' data-item-id='" + esc(it.item_id) + "'>삭제</button></td></tr>";
+}).join("") || "<tr><td colspan='4' class='biz-empty-cell'>등록된 견적 항목이 없습니다.</td></tr>";
+}
+
+function addAsItem() {
+if (!els.asItemName.value) { els.asItemResult.hidden = false; els.asItemResult.textContent = "항목명을 입력해주세요."; return; }
+els.asItemAddBtn.disabled = true;
+callApi({
+action: "enterpriseAddASItem", enterprise_id: session.enterprise_id, request_id: currentAsRequestId,
+item_name: els.asItemName.value, cost: els.asItemCost.value || 0, note: els.asItemNote.value
+}).then(function (res) {
+els.asItemAddBtn.disabled = false;
+els.asItemResult.hidden = false;
+els.asItemResult.textContent = res.success ? "항목이 추가되었습니다." : (res.message || "추가에 실패했습니다.");
+if (res.success) {
+els.asItemName.value = ""; els.asItemCost.value = ""; els.asItemNote.value = "";
+loadAsItems(currentAsRequestId);
+}
+}).catch(function () {
+els.asItemAddBtn.disabled = false;
+els.asItemResult.hidden = false;
+els.asItemResult.textContent = "네트워크 오류가 발생했습니다.";
+});
+}
+
+function deleteAsItem(itemId) {
+callApi({ action: "enterpriseDeleteASItem", enterprise_id: session.enterprise_id, item_id: itemId }).then(function (res) {
+els.asItemResult.hidden = false;
+els.asItemResult.textContent = res.message || (res.success ? "삭제되었습니다." : "삭제에 실패했습니다.");
+if (res.success) loadAsItems(currentAsRequestId);
+});
+}
+
+function loadRepairPartners() {
+callApi({ action: "enterpriseGetRepairPartners", enterprise_id: session.enterprise_id }).then(function (res) {
+if (!res.success) return;
+repairPartnersCache = res.partners || [];
+els.asPartnerSelect.innerHTML = repairPartnersCache.map(function (p) {
+return "<option value='" + esc(p.partner_id) + "'>" + esc(p.customer_display_name || p.partner_name) + "</option>";
+}).join("") || "<option value=''>등록된 수리처가 없습니다</option>";
+});
+}
+
+function assignPartner() {
+var partnerId = els.asPartnerSelect.value;
+if (!partnerId) { els.asPartnerResult.hidden = false; els.asPartnerResult.textContent = "배정할 수리처를 선택해주세요."; return; }
+els.asPartnerAssignBtn.disabled = true;
+callApi({ action: "enterpriseAssignRepairPartner", enterprise_id: session.enterprise_id, request_id: currentAsRequestId, partner_id: partnerId }).then(function (res) {
+els.asPartnerAssignBtn.disabled = false;
+els.asPartnerResult.hidden = false;
+els.asPartnerResult.textContent = res.message || (res.success ? "배정되었습니다." : "배정에 실패했습니다.");
+if (res.success) loadAsDetail(currentAsRequestId);
+}).catch(function () {
+els.asPartnerAssignBtn.disabled = false;
+els.asPartnerResult.hidden = false;
+els.asPartnerResult.textContent = "네트워크 오류가 발생했습니다.";
+});
+}
+
+function submitSerial() {
+if (!els.asSerialInput.value) { els.asSerialResult.hidden = false; els.asSerialResult.textContent = "시리얼 번호를 입력해주세요."; return; }
+els.asSerialBtn.disabled = true;
+callApi({ action: "enterpriseFillSerial", enterprise_id: session.enterprise_id, request_id: currentAsRequestId, serial: els.asSerialInput.value }).then(function (res) {
+els.asSerialBtn.disabled = false;
+els.asSerialResult.hidden = false;
+els.asSerialResult.textContent = res.message || (res.success ? "등록되었습니다." : "등록에 실패했습니다.");
+if (res.success) loadAsDetail(currentAsRequestId);
+}).catch(function () {
+els.asSerialBtn.disabled = false;
+els.asSerialResult.hidden = false;
+els.asSerialResult.textContent = "네트워크 오류가 발생했습니다.";
+});
+}
+
+function loadAsNotes(requestId) {
+els.asNoteTbody.innerHTML = "<tr><td colspan='3' class='biz-empty-cell'>불러오는 중...</td></tr>";
+callApi({ action: "enterpriseGetNotes", enterprise_id: session.enterprise_id, request_id: requestId }).then(function (res) {
+if (!res.success) { els.asNoteTbody.innerHTML = "<tr><td colspan='3' class='biz-empty-cell'>불러오지 못했습니다.</td></tr>"; return; }
+renderAsNotes(res.notes || []);
+});
+}
+
+function renderAsNotes(list) {
+els.asNoteTbody.innerHTML = list.map(function (n) {
+return "<tr><td>" + esc(n.note) + "</td><td>" + esc(n.author || "BIZ") + "</td><td>" + fmtDate(n.created_at) + "</td></tr>";
+}).join("") || "<tr><td colspan='3' class='biz-empty-cell'>등록된 메모가 없습니다.</td></tr>";
+}
+
+function addAsNote() {
+if (!els.asNoteInput.value) { els.asNoteResult.hidden = false; els.asNoteResult.textContent = "메모 내용을 입력해주세요."; return; }
+els.asNoteAddBtn.disabled = true;
+callApi({ action: "enterpriseAddNote", enterprise_id: session.enterprise_id, request_id: currentAsRequestId, note: els.asNoteInput.value, author: session.contact_name || "BIZ" }).then(function (res) {
+els.asNoteAddBtn.disabled = false;
+els.asNoteResult.hidden = false;
+els.asNoteResult.textContent = res.success ? "메모가 추가되었습니다." : (res.message || "추가에 실패했습니다.");
+if (res.success) { els.asNoteInput.value = ""; loadAsNotes(currentAsRequestId); }
+}).catch(function () {
+els.asNoteAddBtn.disabled = false;
+els.asNoteResult.hidden = false;
+els.asNoteResult.textContent = "네트워크 오류가 발생했습니다.";
+});
+}
+
+function sendReminder() {
+els.asReminderBtn.disabled = true;
+callApi({ action: "enterpriseSendPaymentReminder", enterprise_id: session.enterprise_id, request_id: currentAsRequestId }).then(function (res) {
+els.asReminderBtn.disabled = false;
+els.asReminderResult.hidden = false;
+els.asReminderResult.textContent = res.message || (res.success ? "발송되었습니다." : "발송에 실패했습니다.");
+}).catch(function () {
+els.asReminderBtn.disabled = false;
+els.asReminderResult.hidden = false;
+els.asReminderResult.textContent = "네트워크 오류가 발생했습니다.";
+});
+}
+
 function renderAS(list) {
+asListCache = list;
 els.asTbody.innerHTML = list.map(function (r) {
-return "<tr><td>" + esc(r.store_name) + "</td><td>" + esc((r.brand + " " + r.model).trim()) + "</td><td>" + esc(r.intake_name) + "</td><td>" + statusTagHtml(r.status) + "</td><td>" + fmtDate(r.requested_at) + "</td></tr>";
-}).join("") || "<tr><td colspan='5' class='biz-empty-cell'>접수된 AS건이 없습니다.</td></tr>";
+return "<tr><td>" + esc(r.store_name) + "</td><td>" + esc((r.brand + " " + r.model).trim()) + "</td><td>" + esc(r.intake_name) + "</td><td>" + statusTagHtml(r.status) + "</td><td>" + fmtDate(r.requested_at) + "</td>" +
+"<td><button type='button' class='biz-btn-link' data-request-id='" + esc(r.request_id) + "'>상세</button></td></tr>";
+}).join("") || "<tr><td colspan='6' class='biz-empty-cell'>접수된 AS건이 없습니다.</td></tr>";
 }
 
 function fillProfile() {
@@ -593,6 +841,30 @@ if (e.target === els.memberModal) closeMemberModal();
 els.mileageSubmitBtn.addEventListener("click", submitMileageAdjust);
 els.voucherSubmitBtn.addEventListener("click", submitVoucherIssue);
 els.paymentSubmitBtn.addEventListener("click", submitPaymentRecord);
+
+els.asTbody.addEventListener("click", function (e) {
+var btn = e.target.closest("[data-request-id]");
+if (!btn) return;
+openAsModal(btn.getAttribute("data-request-id"));
+});
+els.asModalCloseBtn.addEventListener("click", closeAsModal);
+els.asModal.addEventListener("click", function (e) {
+if (e.target === els.asModal) closeAsModal();
+});
+document.querySelectorAll("#biz-app .biz-stage-btn").forEach(function (btn) {
+btn.addEventListener("click", function () { toggleStage(btn.getAttribute("data-stage"), btn); });
+});
+els.asBillingSaveBtn.addEventListener("click", submitBilling);
+els.asItemAddBtn.addEventListener("click", addAsItem);
+els.asItemTbody.addEventListener("click", function (e) {
+var btn = e.target.closest("[data-item-id]");
+if (!btn) return;
+deleteAsItem(btn.getAttribute("data-item-id"));
+});
+els.asPartnerAssignBtn.addEventListener("click", assignPartner);
+els.asSerialBtn.addEventListener("click", submitSerial);
+els.asNoteAddBtn.addEventListener("click", addAsNote);
+els.asReminderBtn.addEventListener("click", sendReminder);
 
 if (!restoreSession()) showView("login");
 })();
