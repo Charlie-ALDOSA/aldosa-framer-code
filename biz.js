@@ -75,9 +75,6 @@ assetCustTbody: document.getElementById("bizAssetCustTbody"),
 asTbody: document.getElementById("bizAsTbody"),
 shipmentTbody: document.getElementById("bizShipmentTbody"),
 shipmentSelectAll: document.getElementById("bizShipmentSelectAll"),
-shipmentMethod: document.getElementById("bizShipmentMethod"),
-shipmentCourier: document.getElementById("bizShipmentCourier"),
-shipmentTracking: document.getElementById("bizShipmentTracking"),
 shipmentSubmitBtn: document.getElementById("bizShipmentSubmitBtn"),
 shipmentResult: document.getElementById("bizShipmentResult"),
 insightAvgDays: document.getElementById("bizInsightAvgDays"),
@@ -127,11 +124,6 @@ asModal: document.getElementById("bizAsModal"),
 asModalCloseBtn: document.getElementById("bizAsModalCloseBtn"),
 asModalTitle: document.getElementById("bizAsModalTitle"),
 asModalMeta: document.getElementById("bizAsModalMeta"),
-asStageResult: document.getElementById("bizAsStageResult"),
-asQuoteAmount: document.getElementById("bizAsQuoteAmount"),
-asChargeAmount: document.getElementById("bizAsChargeAmount"),
-asBillingSaveBtn: document.getElementById("bizAsBillingSaveBtn"),
-asBillingResult: document.getElementById("bizAsBillingResult"),
 asItemTbody: document.getElementById("bizAsItemTbody"),
 asItemName: document.getElementById("bizAsItemName"),
 asItemCost: document.getElementById("bizAsItemCost"),
@@ -142,15 +134,10 @@ asPartnerSelect: document.getElementById("bizAsPartnerSelect"),
 asPartnerAssignBtn: document.getElementById("bizAsPartnerAssignBtn"),
 asPartnerCurrent: document.getElementById("bizAsPartnerCurrent"),
 asPartnerResult: document.getElementById("bizAsPartnerResult"),
-asSerialInput: document.getElementById("bizAsSerialInput"),
-asSerialBtn: document.getElementById("bizAsSerialBtn"),
-asSerialResult: document.getElementById("bizAsSerialResult"),
 asNoteTbody: document.getElementById("bizAsNoteTbody"),
 asNoteInput: document.getElementById("bizAsNoteInput"),
 asNoteAddBtn: document.getElementById("bizAsNoteAddBtn"),
-asNoteResult: document.getElementById("bizAsNoteResult"),
-asReminderBtn: document.getElementById("bizAsReminderBtn"),
-asReminderResult: document.getElementById("bizAsReminderResult")
+asNoteResult: document.getElementById("bizAsNoteResult")
 };
 
 var session = null;
@@ -183,9 +170,22 @@ if (!iso) return "";
 try { return String(iso).substring(0, 10); } catch (e) { return ""; }
 }
 
-function statusTagHtml(status) {
-var isDone = String(status || "").indexOf("완료") !== -1;
-return '<span class="biz-status-tag' + (isDone ? " biz-status-done" : "") + '">' + esc(status || "-") + "</span>";
+function fmtDateDot(iso) {
+return fmtDate(iso).replace(/-/g, ".");
+}
+
+// datetime-local input(브라우저 로컬시간 기준) ↔ ISO(UTC) 문자열 변환 — "날짜 확인/수정" 인라인 편집용
+function isoToLocalInput(iso) {
+if (!iso) return "";
+var d = new Date(iso);
+if (isNaN(d.getTime())) return "";
+function p(n) { return String(n).length < 2 ? "0" + n : String(n); }
+return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + "T" + p(d.getHours()) + ":" + p(d.getMinutes());
+}
+function localInputToIso(val) {
+if (!val) return "";
+var d = new Date(val);
+return isNaN(d.getTime()) ? "" : d.toISOString();
 }
 
 // ── 서브 내비게이션 바 (카테고리 선택 시 상단에 계속 표시됨) ──
@@ -231,6 +231,7 @@ updateSubnav(cat);
 els.crumb.innerHTML = catNames[cat] + (cat !== "home" ? " &nbsp;/&nbsp; <b>" + pageNames[viewId] + "</b>" : "");
 els.pageTitle.textContent = pageNames[viewId];
 
+if (viewId === "as-status") loadAsList();
 if (viewId === "shipment") loadShipmentList();
 if (viewId === "insight-period" || viewId === "insight-cost") loadInsightStats();
 }
@@ -478,92 +479,34 @@ showMemberModalResult("네트워크 오류가 발생했습니다.");
 });
 }
 
-// ── AS 상세보기 모달 (스테이지/견적/수리처배정/시리얼/CS메모/결제재알림) ──
-var STAGE_LABELS = { received: "접수완료", quoted: "견적완료", notified: "안내완료", paid: "입금완료", repaired: "수리완료", shipped: "출고완료" };
+// ── AS 진행 현황: 진행단계/견적/출고정보는 표에 인라인으로 처리하고,
+//   이 모달은 견적 항목·수리처 배정·CS 메모("항목보기"/"메모" 버튼 공용)만 담당합니다. (2026-09-16 정보량 매칭 개편)
+var STAGE_KEYS = ["received", "quoted", "notified", "paid", "repaired", "shipped"];
+var STAGE_SHORT = { received: "접수", quoted: "견적", notified: "안내", paid: "입금", repaired: "수리", shipped: "출고" };
 
 function openAsModal(requestId) {
 currentAsRequestId = requestId;
 var cached = asListCache.filter(function (r) { return r.request_id === requestId; })[0];
 els.asModalTitle.textContent = cached ? ((cached.brand + " " + cached.model).trim() + " (" + requestId + ")") : requestId;
-els.asModalMeta.textContent = "불러오는 중...";
-els.asStageResult.hidden = true;
-els.asBillingResult.hidden = true;
+els.asModalMeta.textContent = cached ?
+("접수매장: " + (cached.store_name || "-") + " · 의뢰인: " + (cached.intake_name || "-") + " (" + (cached.intake_phone || "-") + ") · 시리얼: " + (cached.serial || "미등록")) : "-";
 els.asItemResult.hidden = true;
 els.asPartnerResult.hidden = true;
-els.asSerialResult.hidden = true;
 els.asNoteResult.hidden = true;
-els.asReminderResult.hidden = true;
-els.asSerialInput.value = "";
 els.asNoteInput.value = "";
 els.asItemName.value = "";
 els.asItemCost.value = "";
 els.asItemNote.value = "";
-document.querySelectorAll("#biz-app .biz-stage-btn").forEach(function (b) { b.classList.remove("biz-stage-done"); });
+els.asPartnerCurrent.textContent = cached && cached.current_partner_name ? ("현재 배정: " + cached.current_partner_name) : "배정된 수리처가 없습니다.";
 els.asModal.hidden = false;
-loadAsDetail(requestId);
 loadAsItems(requestId);
 loadAsNotes(requestId);
-loadRepairPartners();
+loadRepairPartners(cached ? cached.current_partner_id : "");
 }
 
 function closeAsModal() {
 els.asModal.hidden = true;
 currentAsRequestId = "";
-}
-
-function loadAsDetail(requestId) {
-callApi({ action: "enterpriseGetASDetail", enterprise_id: session.enterprise_id, request_id: requestId }).then(function (res) {
-if (!res.success) {
-els.asModalMeta.textContent = res.message || "불러오지 못했습니다.";
-return;
-}
-els.asModalMeta.textContent = "접수매장: " + (res.store_name || "-") + " · 의뢰인: " + (res.intake_name || "-") + " (" + (res.intake_phone || "-") + ") · 접수일: " + fmtDate(res.requested_at) + " · 시리얼: " + (res.serial || "미등록");
-document.querySelectorAll("#biz-app .biz-stage-btn").forEach(function (b) {
-var stage = b.getAttribute("data-stage");
-b.classList.toggle("biz-stage-done", !!res["stage_" + stage]);
-});
-els.asQuoteAmount.value = res.quote_amount || "";
-els.asChargeAmount.value = res.charge_amount || "";
-els.asPartnerCurrent.textContent = res.current_partner_name ? ("현재 배정: " + res.current_partner_name) : "배정된 수리처가 없습니다.";
-if (res.current_partner_id) els.asPartnerSelect.value = res.current_partner_id;
-});
-}
-
-function toggleStage(stage, btn) {
-var isDone = btn.classList.contains("biz-stage-done");
-btn.disabled = true;
-callApi({
-action: "enterpriseUpdateASStage", enterprise_id: session.enterprise_id, request_id: currentAsRequestId,
-stage: stage, clear: isDone ? "true" : "false"
-}).then(function (res) {
-btn.disabled = false;
-els.asStageResult.hidden = false;
-els.asStageResult.textContent = res.message || (res.success ? "처리되었습니다." : "처리에 실패했습니다.");
-if (res.success) {
-btn.classList.toggle("biz-stage-done", !isDone);
-loadDashboard();
-}
-}).catch(function () {
-btn.disabled = false;
-els.asStageResult.hidden = false;
-els.asStageResult.textContent = "네트워크 오류가 발생했습니다.";
-});
-}
-
-function submitBilling() {
-els.asBillingSaveBtn.disabled = true;
-callApi({
-action: "enterpriseUpdateASBilling", enterprise_id: session.enterprise_id, request_id: currentAsRequestId,
-quote_amount: els.asQuoteAmount.value, charge_amount: els.asChargeAmount.value
-}).then(function (res) {
-els.asBillingSaveBtn.disabled = false;
-els.asBillingResult.hidden = false;
-els.asBillingResult.textContent = res.message || (res.success ? "저장되었습니다." : "저장에 실패했습니다.");
-}).catch(function () {
-els.asBillingSaveBtn.disabled = false;
-els.asBillingResult.hidden = false;
-els.asBillingResult.textContent = "네트워크 오류가 발생했습니다.";
-});
 }
 
 function loadAsItems(requestId) {
@@ -610,13 +553,14 @@ if (res.success) loadAsItems(currentAsRequestId);
 });
 }
 
-function loadRepairPartners() {
+function loadRepairPartners(currentPartnerId) {
 callApi({ action: "enterpriseGetRepairPartners", enterprise_id: session.enterprise_id }).then(function (res) {
 if (!res.success) return;
 repairPartnersCache = res.partners || [];
 els.asPartnerSelect.innerHTML = repairPartnersCache.map(function (p) {
 return "<option value='" + esc(p.partner_id) + "'>" + esc(p.customer_display_name || p.partner_name) + "</option>";
 }).join("") || "<option value=''>등록된 수리처가 없습니다</option>";
+if (currentPartnerId) els.asPartnerSelect.value = currentPartnerId;
 });
 }
 
@@ -628,26 +572,15 @@ callApi({ action: "enterpriseAssignRepairPartner", enterprise_id: session.enterp
 els.asPartnerAssignBtn.disabled = false;
 els.asPartnerResult.hidden = false;
 els.asPartnerResult.textContent = res.message || (res.success ? "배정되었습니다." : "배정에 실패했습니다.");
-if (res.success) loadAsDetail(currentAsRequestId);
+if (res.success) {
+var p = repairPartnersCache.filter(function (x) { return x.partner_id === partnerId; })[0];
+els.asPartnerCurrent.textContent = "현재 배정: " + (p ? (p.customer_display_name || p.partner_name) : partnerId);
+loadAsList();
+}
 }).catch(function () {
 els.asPartnerAssignBtn.disabled = false;
 els.asPartnerResult.hidden = false;
 els.asPartnerResult.textContent = "네트워크 오류가 발생했습니다.";
-});
-}
-
-function submitSerial() {
-if (!els.asSerialInput.value) { els.asSerialResult.hidden = false; els.asSerialResult.textContent = "시리얼 번호를 입력해주세요."; return; }
-els.asSerialBtn.disabled = true;
-callApi({ action: "enterpriseFillSerial", enterprise_id: session.enterprise_id, request_id: currentAsRequestId, serial: els.asSerialInput.value }).then(function (res) {
-els.asSerialBtn.disabled = false;
-els.asSerialResult.hidden = false;
-els.asSerialResult.textContent = res.message || (res.success ? "등록되었습니다." : "등록에 실패했습니다.");
-if (res.success) loadAsDetail(currentAsRequestId);
-}).catch(function () {
-els.asSerialBtn.disabled = false;
-els.asSerialResult.hidden = false;
-els.asSerialResult.textContent = "네트워크 오류가 발생했습니다.";
 });
 }
 
@@ -680,25 +613,169 @@ els.asNoteResult.textContent = "네트워크 오류가 발생했습니다.";
 });
 }
 
-function sendReminder() {
-els.asReminderBtn.disabled = true;
-callApi({ action: "enterpriseSendPaymentReminder", enterprise_id: session.enterprise_id, request_id: currentAsRequestId }).then(function (res) {
-els.asReminderBtn.disabled = false;
-els.asReminderResult.hidden = false;
-els.asReminderResult.textContent = res.message || (res.success ? "발송되었습니다." : "발송에 실패했습니다.");
+function handleReminder(btn) {
+var requestId = btn.getAttribute("data-request-id");
+btn.disabled = true;
+callApi({ action: "enterpriseSendPaymentReminder", enterprise_id: session.enterprise_id, request_id: requestId })
+.then(function (res) { btn.disabled = false; alert(res.message || (res.success ? "발송되었습니다." : "발송에 실패했습니다.")); })
+.catch(function () { btn.disabled = false; alert("네트워크 오류가 발생했습니다."); });
+}
+
+function handleSerialFill(btn) {
+var requestId = btn.getAttribute("data-request-id");
+var serial = prompt("시리얼 번호를 입력해주세요.");
+if (!serial) return;
+callApi({ action: "enterpriseFillSerial", enterprise_id: session.enterprise_id, request_id: requestId, serial: serial })
+.then(function (res) { alert(res.message || (res.success ? "등록되었습니다." : "등록에 실패했습니다.")); if (res.success) loadAsList(); })
+.catch(function () { alert("네트워크 오류가 발생했습니다."); });
+}
+
+function handleStageToggle(dot) {
+var requestId = dot.getAttribute("data-request-id");
+var stage = dot.getAttribute("data-stage");
+var isDone = dot.classList.contains("biz-done");
+dot.style.pointerEvents = "none";
+callApi({ action: "enterpriseUpdateASStage", enterprise_id: session.enterprise_id, request_id: requestId, stage: stage, clear: isDone ? "true" : "false" })
+.then(function (res) {
+dot.style.pointerEvents = "";
+if (res.success) { loadAsList(); } else { alert(res.message || "처리에 실패했습니다."); }
 }).catch(function () {
-els.asReminderBtn.disabled = false;
-els.asReminderResult.hidden = false;
-els.asReminderResult.textContent = "네트워크 오류가 발생했습니다.";
+dot.style.pointerEvents = "";
+alert("네트워크 오류가 발생했습니다.");
 });
+}
+
+function handleBillingSave(btn) {
+var requestId = btn.getAttribute("data-request-id");
+var wrap = btn.closest(".biz-billing-edit");
+var quote = wrap.querySelector(".biz-quote-input").value;
+var charge = wrap.querySelector(".biz-charge-input").value;
+btn.disabled = true;
+callApi({ action: "enterpriseUpdateASBilling", enterprise_id: session.enterprise_id, request_id: requestId, quote_amount: quote, charge_amount: charge })
+.then(function (res) {
+btn.disabled = false;
+if (res.success) { loadAsList(); } else { alert(res.message || "저장에 실패했습니다."); }
+}).catch(function () { btn.disabled = false; alert("네트워크 오류가 발생했습니다."); });
+}
+
+function openDateEdit(td, r) {
+if (!td || td.querySelector(".biz-date-edit-row")) return;
+var editLink = td.querySelector(".biz-stage-edit-link");
+var wrap = document.createElement("div");
+wrap.className = "biz-date-edit-row";
+wrap.innerHTML = STAGE_KEYS.map(function (s) {
+return "<div class='biz-date-edit-item'><label>" + STAGE_SHORT[s] + "</label><input type='datetime-local' data-stage='" + s + "' value='" + isoToLocalInput(r["stage_" + s]) + "' /></div>";
+}).join("") +
+"<div class='biz-date-edit-actions'>" +
+"<button type='button' class='biz-btn-sm biz-btn-dark' data-act='date-save' data-request-id='" + esc(r.request_id) + "'>저장</button>" +
+"<button type='button' class='biz-btn-sm biz-btn-outline' data-act='date-cancel' data-request-id='" + esc(r.request_id) + "'>취소</button>" +
+"</div>";
+editLink.insertAdjacentElement("afterend", wrap);
+}
+
+function handleShipEdit(box, r) {
+if (!box) return;
+var isPickup = r.shipping_method === "방문출고";
+box.innerHTML = "<div class='biz-sb-label'>출고 정보 수정</div>" +
+"<div style='display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;'>" +
+"<select class='biz-f biz-ship-edit-carrier'>" +
+["우체국택배", "CJ대한통운", "한진택배", "로젠택배", "기타", "방문출고"].map(function (c) {
+return "<option value='" + c + "'" + (r.shipping_method === c ? " selected" : "") + ">" + c + "</option>";
+}).join("") +
+"</select>" +
+"<input class='biz-f biz-ship-edit-value' placeholder='" + (isPickup ? "수령인 성명" : "운송장번호") + "' value='" + esc(r.tracking_info || "") + "' />" +
+"</div>" +
+"<div class='biz-date-edit-actions'>" +
+"<button type='button' class='biz-btn-sm biz-btn-dark' data-act='ship-save' data-request-id='" + esc(r.request_id) + "'>저장</button>" +
+"<button type='button' class='biz-btn-sm biz-btn-outline' data-act='ship-cancel' data-request-id='" + esc(r.request_id) + "'>취소</button>" +
+"</div>";
+box.setAttribute("data-request-id", r.request_id);
+var sel = box.querySelector(".biz-ship-edit-carrier");
+sel.addEventListener("change", function () {
+box.querySelector(".biz-ship-edit-value").placeholder = sel.value === "방문출고" ? "수령인 성명" : "운송장번호";
+});
+}
+
+function handleShipSave(box) {
+var requestId = box.getAttribute("data-request-id");
+var carrier = box.querySelector(".biz-ship-edit-carrier").value;
+var value = box.querySelector(".biz-ship-edit-value").value.trim();
+if (!value) { alert("값을 입력해주세요."); return; }
+callApi({ action: "enterpriseUpdateASBilling", enterprise_id: session.enterprise_id, request_id: requestId, shipping_method: carrier, tracking_info: value })
+.then(function (res) { if (res.success) { loadAsList(); } else { alert(res.message || "저장에 실패했습니다."); } })
+.catch(function () { alert("네트워크 오류가 발생했습니다."); });
+}
+
+function shipBoxHtml(r) {
+if (!r.stage_repaired) return "";
+if (!r.stage_shipped) {
+return "<div class='biz-ship-box'><div class='biz-sb-label'>출고 정보</div><div class='biz-ship-wait'>출고 대기중 — \"출고 관리\"에서 처리해주세요</div></div>";
+}
+var isPickup = r.shipping_method === "방문출고";
+return "<div class='biz-ship-box' data-request-id='" + esc(r.request_id) + "'>" +
+"<div class='biz-sb-label'>출고 정보</div>" +
+"<div class='biz-ship-line'><span>" + (isPickup ? "방문출고 · 수령인 " + esc(r.tracking_info || "-") : esc(r.shipping_method || "-") + " · " + esc(r.tracking_info || "-")) + "</span>" +
+"<span class='biz-badge-done'>" + (isPickup ? "전달완료" : "발송완료") + "</span></div>" +
+"<button type='button' class='biz-btn-sm biz-btn-outline' data-act='ship-edit' data-request-id='" + esc(r.request_id) + "'>수정</button>" +
+"</div>";
+}
+
+function stageCellHtml(r) {
+var dots = STAGE_KEYS.map(function (s) {
+var done = !!r["stage_" + s];
+return "<span class='biz-stage-dot" + (done ? " biz-done" : "") + "' data-act='stage-toggle' data-request-id='" + esc(r.request_id) + "' data-stage='" + s + "'>" + (done ? "✓" : "") + "</span>";
+}).join("");
+var labels = STAGE_KEYS.map(function (s) {
+var done = !!r["stage_" + s];
+return "<span class='" + (done ? "biz-done" : "") + "'>" + (done ? fmtDateDot(r["stage_" + s]).substring(5) : STAGE_SHORT[s]) + "</span>";
+}).join("");
+var reminderDisabled = !!r.stage_paid;
+return "<div class='biz-stage-track'>" + dots + "</div>" +
+"<div class='biz-stage-labels'>" + labels + "</div>" +
+"<button type='button' class='biz-stage-edit-link' data-act='date-edit' data-request-id='" + esc(r.request_id) + "'>날짜 확인/수정</button>" +
+"<div class='biz-payment-reminder'><button type='button' class='biz-btn-sm " + (reminderDisabled ? "biz-btn-disabled-sm" : "biz-btn-outline-red") + "' data-act='reminder' data-request-id='" + esc(r.request_id) + "'" + (reminderDisabled ? " disabled" : "") + ">결제 재알림</button></div>" +
+shipBoxHtml(r);
+}
+
+function billingCellHtml(r) {
+var id = esc(r.request_id);
+return "<div class='biz-billing-edit'>" +
+"<input type='number' class='biz-quote-input' value='" + esc(r.quote_amount || "") + "' placeholder='견적' />" +
+"<input type='number' class='biz-charge-input' value='" + esc(r.charge_amount || "") + "' placeholder='청구' />" +
+"<button type='button' class='biz-btn-sm biz-btn-dark' data-act='billing-save' data-request-id='" + id + "'>저장</button>" +
+"</div>";
+}
+
+function renderAsRow(r) {
+var id = esc(r.request_id);
+var snCell = r.serial ? "<span>" + esc(r.serial) + "</span>" : "<button type='button' class='biz-btn-sm biz-btn-outline-red' data-act='serial-fill' data-request-id='" + id + "'>시리얼 보완</button>";
+return "<tr data-request-id='" + id + "'>" +
+"<td class='biz-as-reqid'>" + id + "</td>" +
+"<td><div class='biz-as-store'>" + esc(r.store_name || "-") + "</div><div class='biz-as-meta'>" + esc(r.staff_name || "-") + (r.ofr_number ? "<br>OFR " + esc(r.ofr_number) : "") + "</div></td>" +
+"<td><div class='biz-brand-name'>" + esc(r.brand) + "</div><div class='biz-model-name'>" + esc(r.model) + "</div></td>" +
+"<td>" + snCell + "</td>" +
+"<td><div class='biz-as-meta'>" + esc(r.intake_name) + "<br>" + esc(r.intake_phone) + "</div><div class='biz-as-meta' style='margin-top:4px;'>📝 " + esc(r.symptom || "-") + "</div></td>" +
+"<td class='biz-as-stage-cell'>" + stageCellHtml(r) + "</td>" +
+"<td><button type='button' class='biz-btn-sm biz-btn-dark' data-act='manage' data-request-id='" + id + "'>항목보기</button></td>" +
+"<td><button type='button' class='biz-btn-sm biz-btn-outline-gold' data-act='manage' data-request-id='" + id + "'>메모</button></td>" +
+"<td>" + billingCellHtml(r) + "</td>" +
+"<td style='font-size:11px;color:var(--biz-muted);white-space:nowrap;'>" + fmtDateDot(r.requested_at) + "</td>" +
+"</tr>";
 }
 
 function renderAS(list) {
 asListCache = list;
-els.asTbody.innerHTML = list.map(function (r) {
-return "<tr><td>" + esc(r.store_name) + "</td><td>" + esc((r.brand + " " + r.model).trim()) + "</td><td>" + esc(r.intake_name) + "</td><td>" + statusTagHtml(r.status) + "</td><td>" + fmtDate(r.requested_at) + "</td>" +
-"<td><button type='button' class='biz-btn-link' data-request-id='" + esc(r.request_id) + "'>상세</button></td></tr>";
-}).join("") || "<tr><td colspan='6' class='biz-empty-cell'>접수된 AS건이 없습니다.</td></tr>";
+els.asTbody.innerHTML = list.map(renderAsRow).join("") || "<tr><td colspan='10' class='biz-empty-cell'>접수된 AS건이 없습니다.</td></tr>";
+}
+
+function loadAsList() {
+els.asTbody.innerHTML = "<tr><td colspan='10' class='biz-empty-cell'>불러오는 중...</td></tr>";
+callApi({ action: "enterpriseGetASList", enterprise_id: session.enterprise_id }).then(function (res) {
+if (!res.success) { els.asTbody.innerHTML = "<tr><td colspan='10' class='biz-empty-cell'>불러오지 못했습니다.</td></tr>"; return; }
+renderAS(res.list || []);
+}).catch(function () {
+els.asTbody.innerHTML = "<tr><td colspan='10' class='biz-empty-cell'>불러오지 못했습니다.</td></tr>";
+});
 }
 
 function fillProfile() {
@@ -729,7 +806,6 @@ els.usageCustomer.textContent = res.customer_count;
 els.usageAs.textContent = res.as_count;
 
 renderCustomers(res.all_asset_customers || res.recent_asset_customers || []);
-renderAS(res.all_as || res.recent_as || []);
 });
 
 callApi({ action: "getEnterpriseFunnelCounts", enterprise_id: session.enterprise_id }).then(function (res) {
@@ -741,63 +817,104 @@ els.funnelShipment.textContent = res.counts.shipment_pending;
 });
 }
 
-// ── 출고 관리 ────────────────────────────────────────
+// ── 출고 관리 (2026-09-16 출고관리 v2 개편 — 행별 택배사/방문출고 선택 + 동적 입력 1개) ──
+var SHIP_CARRIERS = ["우체국택배", "CJ대한통운", "한진택배", "로젠택배", "기타"];
+
+function carrierSelectHtml(id) {
+return "<select class='biz-f biz-carrier-select' data-request-id='" + esc(id) + "'>" +
+"<option value=''>택배사 선택</option>" +
+SHIP_CARRIERS.map(function (c) { return "<option>" + c + "</option>"; }).join("") +
+"<option value='방문출고'>방문출고</option></select>";
+}
+
+function renderShipmentRow(r) {
+var id = esc(r.request_id);
+return "<tr data-request-id='" + id + "'>" +
+"<td><input type='checkbox' class='biz-ship-check' value='" + id + "' /></td>" +
+"<td class='biz-ship-id'>" + esc(r.shipment_temp_id) + "</td>" +
+"<td>" + esc((r.brand + " " + r.model).trim()) + "</td>" +
+"<td>" + esc(r.intake_name) + "</td>" +
+"<td>" + esc(r.store_name) + "</td>" +
+"<td>" + carrierSelectHtml(id) + "</td>" +
+"<td><input class='biz-f biz-ship-value-input' placeholder='운송장번호' /></td>" +
+"<td><button type='button' class='biz-btn-sm biz-btn-dark biz-ship-action-btn' data-request-id='" + id + "' disabled>발송처리</button></td>" +
+"</tr>";
+}
+
 function loadShipmentList() {
-els.shipmentTbody.innerHTML = "<tr><td colspan='6' class='biz-empty-cell'>불러오는 중...</td></tr>";
+els.shipmentTbody.innerHTML = "<tr><td colspan='8' class='biz-empty-cell'>불러오는 중...</td></tr>";
 els.shipmentResult.hidden = true;
 callApi({ action: "getEnterpriseShipmentList", enterprise_id: session.enterprise_id }).then(function (res) {
 if (!res.success) {
-els.shipmentTbody.innerHTML = "<tr><td colspan='6' class='biz-empty-cell'>목록을 불러오지 못했습니다.</td></tr>";
+els.shipmentTbody.innerHTML = "<tr><td colspan='8' class='biz-empty-cell'>목록을 불러오지 못했습니다.</td></tr>";
 return;
 }
 shipmentListCache = res.list || [];
 if (!shipmentListCache.length) {
-els.shipmentTbody.innerHTML = "<tr><td colspan='6' class='biz-empty-cell'>출고 대기 중인 건이 없습니다.</td></tr>";
+els.shipmentTbody.innerHTML = "<tr><td colspan='8' class='biz-empty-cell'>출고 대기 중인 건이 없습니다.</td></tr>";
 return;
 }
-els.shipmentTbody.innerHTML = shipmentListCache.map(function (r) {
-return "<tr>" +
-"<td><input type='checkbox' class='biz-ship-check' value='" + esc(r.request_id) + "' /></td>" +
-"<td>" + esc(r.shipment_temp_id) + "</td>" +
-"<td>" + esc((r.brand + " " + r.model).trim()) + "</td>" +
-"<td>" + esc(r.intake_name) + "</td>" +
-"<td>" + esc(r.store_name) + "</td>" +
-"<td>" + esc(r.shipment_method || "-") + "</td>" +
-"</tr>";
-}).join("");
+els.shipmentTbody.innerHTML = shipmentListCache.map(renderShipmentRow).join("");
 }).catch(function () {
-els.shipmentTbody.innerHTML = "<tr><td colspan='6' class='biz-empty-cell'>목록을 불러오지 못했습니다.</td></tr>";
+els.shipmentTbody.innerHTML = "<tr><td colspan='8' class='biz-empty-cell'>목록을 불러오지 못했습니다.</td></tr>";
 });
 }
 
-function submitShipment() {
-var checked = Array.prototype.slice.call(document.querySelectorAll("#biz-app .biz-ship-check:checked")).map(function (c) { return c.value; });
-if (!checked.length) {
+function checkShipRowReady(tr) {
+var carrier = tr.querySelector(".biz-carrier-select").value;
+var val = tr.querySelector(".biz-ship-value-input").value.trim();
+tr.querySelector(".biz-ship-action-btn").disabled = !(carrier && val);
+}
+
+// 행 하나를 발송처리 — enterpriseProcessShipmentRow는 내부적으로 updateASStageCore를 재사용하므로
+// "AS 진행 현황"에서 직접 출고완료 처리할 때와 동일하게 문자 발송/이력 갱신이 일어납니다.
+function processShipmentRow(requestId, btn) {
+var tr = btn.closest("tr");
+var carrier = tr.querySelector(".biz-carrier-select").value;
+var val = tr.querySelector(".biz-ship-value-input").value.trim();
+btn.disabled = true;
+return callApi({ action: "enterpriseProcessShipmentRow", enterprise_id: session.enterprise_id, request_id: requestId, carrier: carrier, value: val })
+.then(function (res) {
+if (res.success) {
+tr.parentNode.removeChild(tr);
+if (!els.shipmentTbody.children.length) {
+els.shipmentTbody.innerHTML = "<tr><td colspan='8' class='biz-empty-cell'>출고 대기 중인 건이 없습니다.</td></tr>";
+}
+} else {
+btn.disabled = false;
+els.shipmentResult.hidden = false;
+els.shipmentResult.textContent = res.message || "처리에 실패했습니다.";
+}
+return res;
+}).catch(function () {
+btn.disabled = false;
+els.shipmentResult.hidden = false;
+els.shipmentResult.textContent = "네트워크 오류가 발생했습니다.";
+});
+}
+
+// "선택 건 일괄 발송처리" — 새 대량 액션을 따로 두지 않고, 각 행이 이미 입력해둔 값 그대로
+// 행 단위 액션(processShipmentRow)을 선택된 행마다 순서대로 호출합니다.
+function submitBulkShipment() {
+var trs = Array.prototype.slice.call(document.querySelectorAll("#biz-app .biz-ship-check:checked")).map(function (c) { return c.closest("tr"); });
+if (!trs.length) {
 els.shipmentResult.hidden = false;
 els.shipmentResult.textContent = "출고 처리할 건을 선택해주세요.";
 return;
 }
-els.shipmentSubmitBtn.disabled = true;
-callApi({
-action: "enterpriseProcessShipment",
-enterprise_id: session.enterprise_id,
-request_ids: JSON.stringify(checked),
-shipment_method: els.shipmentMethod.value,
-shipping_method: els.shipmentCourier.value,
-tracking_info: els.shipmentTracking.value
-}).then(function (res) {
-els.shipmentSubmitBtn.disabled = false;
+els.shipmentResult.hidden = true;
+var skipped = 0;
+var chain = Promise.resolve();
+trs.forEach(function (tr) {
+chain = chain.then(function () {
+var btn = tr.querySelector(".biz-ship-action-btn");
+if (!btn || btn.disabled) { skipped++; return; }
+return processShipmentRow(tr.getAttribute("data-request-id"), btn);
+});
+});
+chain.then(function () {
 els.shipmentResult.hidden = false;
-els.shipmentResult.textContent = res.message || (res.success ? "처리되었습니다." : "처리에 실패했습니다.");
-if (res.success) {
-els.shipmentCourier.value = "";
-els.shipmentTracking.value = "";
-loadShipmentList();
-}
-}).catch(function () {
-els.shipmentSubmitBtn.disabled = false;
-els.shipmentResult.hidden = false;
-els.shipmentResult.textContent = "네트워크 오류가 발생했습니다.";
+els.shipmentResult.textContent = "선택한 건 처리를 완료했습니다." + (skipped ? " (택배사/운송장번호 미입력 " + skipped + "건은 건너뛰었습니다)" : "");
 });
 }
 
@@ -849,7 +966,26 @@ els.shipmentSelectAll.addEventListener("change", function () {
 var checked = els.shipmentSelectAll.checked;
 document.querySelectorAll("#biz-app .biz-ship-check").forEach(function (c) { c.checked = checked; });
 });
-els.shipmentSubmitBtn.addEventListener("click", submitShipment);
+els.shipmentSubmitBtn.addEventListener("click", submitBulkShipment);
+
+els.shipmentTbody.addEventListener("change", function (e) {
+var sel = e.target.closest(".biz-carrier-select");
+if (!sel) return;
+var tr = sel.closest("tr");
+var isPickup = sel.value === "방문출고";
+tr.querySelector(".biz-ship-value-input").placeholder = isPickup ? "수령인 성명" : "운송장번호";
+tr.querySelector(".biz-ship-action-btn").textContent = isPickup ? "전달완료" : "발송처리";
+checkShipRowReady(tr);
+});
+els.shipmentTbody.addEventListener("input", function (e) {
+if (!e.target.classList.contains("biz-ship-value-input")) return;
+checkShipRowReady(e.target.closest("tr"));
+});
+els.shipmentTbody.addEventListener("click", function (e) {
+var btn = e.target.closest(".biz-ship-action-btn");
+if (!btn) return;
+processShipmentRow(btn.getAttribute("data-request-id"), btn);
+});
 
 els.planChangeBtn.addEventListener("click", function () {
 goto("contact");
@@ -879,19 +1015,41 @@ els.mileageSubmitBtn.addEventListener("click", submitMileageAdjust);
 els.voucherSubmitBtn.addEventListener("click", submitVoucherIssue);
 els.paymentSubmitBtn.addEventListener("click", submitPaymentRecord);
 
+// AS 진행 현황 표 안의 모든 인라인 액션(항목보기/메모, 진행단계 토글, 날짜 확인/수정,
+// 결제 재알림, 시리얼 보완, 견적/청구 저장, 출고정보 수정)을 data-act 속성 하나로 위임 처리
 els.asTbody.addEventListener("click", function (e) {
-var btn = e.target.closest("[data-request-id]");
-if (!btn) return;
-openAsModal(btn.getAttribute("data-request-id"));
+var el = e.target.closest("[data-act]");
+if (!el) return;
+var act = el.getAttribute("data-act");
+var requestId = el.getAttribute("data-request-id");
+var r = asListCache.filter(function (x) { return x.request_id === requestId; })[0];
+
+if (act === "manage") { openAsModal(requestId); return; }
+if (act === "stage-toggle") { handleStageToggle(el); return; }
+if (act === "reminder") { handleReminder(el); return; }
+if (act === "serial-fill") { handleSerialFill(el); return; }
+if (act === "billing-save") { handleBillingSave(el); return; }
+if (act === "date-edit") { openDateEdit(el.closest(".biz-as-stage-cell"), r); return; }
+if (act === "date-cancel") { var row = el.closest(".biz-date-edit-row"); if (row) row.parentNode.removeChild(row); return; }
+if (act === "date-save") {
+var wrap = el.closest(".biz-date-edit-row");
+var payload = { action: "enterpriseUpdateASStageDates", enterprise_id: session.enterprise_id, request_id: requestId };
+wrap.querySelectorAll("input[type=datetime-local]").forEach(function (inp) {
+payload[inp.getAttribute("data-stage")] = localInputToIso(inp.value);
+});
+callApi(payload).then(function (res) {
+if (res.success) { loadAsList(); } else { alert(res.message || "저장에 실패했습니다."); }
+}).catch(function () { alert("네트워크 오류가 발생했습니다."); });
+return;
+}
+if (act === "ship-edit") { handleShipEdit(el.closest(".biz-ship-box"), r); return; }
+if (act === "ship-cancel") { renderAS(asListCache); return; }
+if (act === "ship-save") { handleShipSave(el.closest(".biz-ship-box")); return; }
 });
 els.asModalCloseBtn.addEventListener("click", closeAsModal);
 els.asModal.addEventListener("click", function (e) {
 if (e.target === els.asModal) closeAsModal();
 });
-document.querySelectorAll("#biz-app .biz-stage-btn").forEach(function (btn) {
-btn.addEventListener("click", function () { toggleStage(btn.getAttribute("data-stage"), btn); });
-});
-els.asBillingSaveBtn.addEventListener("click", submitBilling);
 els.asItemAddBtn.addEventListener("click", addAsItem);
 els.asItemTbody.addEventListener("click", function (e) {
 var btn = e.target.closest("[data-item-id]");
@@ -899,9 +1057,7 @@ if (!btn) return;
 deleteAsItem(btn.getAttribute("data-item-id"));
 });
 els.asPartnerAssignBtn.addEventListener("click", assignPartner);
-els.asSerialBtn.addEventListener("click", submitSerial);
 els.asNoteAddBtn.addEventListener("click", addAsNote);
-els.asReminderBtn.addEventListener("click", sendReminder);
 
 if (!restoreSession()) showView("login");
 })();
