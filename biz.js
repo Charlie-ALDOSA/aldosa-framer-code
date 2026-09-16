@@ -58,12 +58,9 @@ railHome: document.getElementById("bizRailHome"),
 railCustomer: document.getElementById("bizRailCustomer"),
 railInsight: document.getElementById("bizRailInsight"),
 railPlatform: document.getElementById("bizRailPlatform"),
-flyoutCustomer: document.getElementById("bizFlyoutCustomer"),
-flyoutInsight: document.getElementById("bizFlyoutInsight"),
-flyoutPlatform: document.getElementById("bizFlyoutPlatform"),
-pinCustomer: document.getElementById("bizPinCustomer"),
-pinInsight: document.getElementById("bizPinInsight"),
-pinPlatform: document.getElementById("bizPinPlatform"),
+subnavCustomer: document.getElementById("bizSubnavCustomer"),
+subnavInsight: document.getElementById("bizSubnavInsight"),
+subnavPlatform: document.getElementById("bizSubnavPlatform"),
 funnelQuote: document.getElementById("bizFunnelQuote"),
 funnelPayment: document.getElementById("bizFunnelPayment"),
 funnelRepair: document.getElementById("bizFunnelRepair"),
@@ -158,7 +155,6 @@ asReminderResult: document.getElementById("bizAsReminderResult")
 
 var session = null;
 var pendingLoginPassword = "";
-var pinned = { customer: false, insight: false, platform: false };
 var dashboardCache = null;
 var shipmentListCache = [];
 var currentModalMemberId = "";
@@ -192,36 +188,11 @@ var isDone = String(status || "").indexOf("완료") !== -1;
 return '<span class="biz-status-tag' + (isDone ? " biz-status-done" : "") + '">' + esc(status || "-") + "</span>";
 }
 
-// ── 플라이아웃 열기/닫기 ──────────────────────────────
-var flyoutMap = { customer: els.flyoutCustomer, insight: els.flyoutInsight, platform: els.flyoutPlatform };
-var railMap = { customer: els.railCustomer, insight: els.railInsight, platform: els.railPlatform };
-var pinMap = { customer: els.pinCustomer, insight: els.pinInsight, platform: els.pinPlatform };
+// ── 서브 내비게이션 바 (카테고리 선택 시 상단에 계속 표시됨) ──
+var subnavMap = { customer: els.subnavCustomer, insight: els.subnavInsight, platform: els.subnavPlatform };
+var railDefaults = { customer: "customer-list", insight: "insight-period", platform: "usage" };
 
-function closeAllFlyouts(exceptKey) {
-Object.keys(flyoutMap).forEach(function (k) {
-if (k !== exceptKey && !pinned[k]) {
-flyoutMap[k].classList.remove("biz-show");
-railMap[k].classList.remove("active");
-}
-});
-}
-
-function toggleFlyout(key) {
-var el = flyoutMap[key];
-var railEl = railMap[key];
-var isShown = el.classList.contains("biz-show");
-closeAllFlyouts(key);
-if (isShown && !pinned[key]) {
-el.classList.remove("biz-show");
-railEl.classList.remove("active");
-} else {
-el.classList.add("biz-show");
-railEl.classList.add("active");
-els.railHome.classList.remove("active");
-}
-}
-
-// 현재 보고 있는 화면의 카테고리를 레일 아이콘 강조로 표시 (풍선 메뉴가 닫혀도 "지금 위치"는 계속 표시됨)
+// 현재 보고 있는 화면의 카테고리를 레일 아이콘 강조로 표시
 function setActiveRail(cat) {
 els.railHome.classList.toggle("active", cat === "home");
 els.railCustomer.classList.toggle("active", cat === "customer");
@@ -229,11 +200,11 @@ els.railInsight.classList.toggle("active", cat === "insight");
 els.railPlatform.classList.toggle("active", cat === "platform");
 }
 
-function togglePin(key) {
-pinned[key] = !pinned[key];
-var btn = pinMap[key];
-btn.classList.toggle("biz-pinned", pinned[key]);
-btn.title = pinned[key] ? "고정됨 (다시 클릭 시 해제)" : "펼침 고정";
+// 현재 카테고리의 서브 내비게이션 바만 보이고 나머지는 숨김 (홈이면 전부 숨김)
+function updateSubnav(cat) {
+Object.keys(subnavMap).forEach(function (k) {
+subnavMap[k].hidden = (k !== cat);
+});
 }
 
 // ── 화면 전환 ────────────────────────────────────────
@@ -243,19 +214,19 @@ var el = document.getElementById(screenIds[key]);
 if (el) el.hidden = key !== viewId;
 });
 
-document.querySelectorAll("#biz-app .biz-fly-item").forEach(function (b) {
-b.classList.remove("biz-active", "biz-platform-active");
+document.querySelectorAll("#biz-app .biz-subnav-item").forEach(function (b) {
+b.classList.remove("biz-active", "biz-platform-active", "biz-insight-active");
 });
-var flyBtn = document.querySelector('#biz-app .biz-fly-item[data-goto="' + viewId + '"]');
-if (flyBtn) {
-flyBtn.classList.add("biz-active");
-if (catOf[viewId] === "platform") flyBtn.classList.add("biz-platform-active");
-if (catOf[viewId] === "insight") flyBtn.classList.add("biz-insight-active");
+var subBtn = document.querySelector('#biz-app .biz-subnav-item[data-goto="' + viewId + '"]');
+if (subBtn) {
+subBtn.classList.add("biz-active");
+if (catOf[viewId] === "platform") subBtn.classList.add("biz-platform-active");
+if (catOf[viewId] === "insight") subBtn.classList.add("biz-insight-active");
 }
 
 var cat = catOf[viewId];
 setActiveRail(cat);
-closeAllFlyouts(null); // 메뉴 항목 선택 시 풍선 메뉴 자동으로 닫힘 (고정(📌)된 메뉴는 유지)
+updateSubnav(cat);
 
 els.crumb.innerHTML = catNames[cat] + (cat !== "home" ? " &nbsp;/&nbsp; <b>" + pageNames[viewId] + "</b>" : "");
 els.pageTitle.textContent = pageNames[viewId];
@@ -266,6 +237,11 @@ if (viewId === "insight-period" || viewId === "insight-cost") loadInsightStats()
 
 function goHome() {
 goto("home");
+}
+
+// 레일 아이콘(고객서비스/인사이트/알도사) 클릭 시 해당 카테고리의 기본 화면으로 이동 + 서브 내비 표시
+function gotoCategoryDefault(cat) {
+goto(railDefaults[cat]);
 }
 
 // ── 세션 ─────────────────────────────────────────────
@@ -861,18 +837,9 @@ els.pwSubmitBtn.addEventListener("click", doChangePassword);
 els.logoutBtn.addEventListener("click", logout);
 
 els.railHome.addEventListener("click", goHome);
-els.railCustomer.addEventListener("click", function () { toggleFlyout("customer"); });
-els.railInsight.addEventListener("click", function () { toggleFlyout("insight"); });
-els.railPlatform.addEventListener("click", function () { toggleFlyout("platform"); });
-els.pinCustomer.addEventListener("click", function () { togglePin("customer"); });
-els.pinInsight.addEventListener("click", function () { togglePin("insight"); });
-els.pinPlatform.addEventListener("click", function () { togglePin("platform"); });
-
-// 풍선 메뉴 바깥(본문 영역 등)을 클릭하면 고정 안 된 풍선 메뉴는 자동으로 닫힘
-document.addEventListener("click", function (e) {
-if (e.target.closest("#biz-app .biz-flyout") || e.target.closest("#biz-app .biz-rail-item")) return;
-closeAllFlyouts(null);
-});
+els.railCustomer.addEventListener("click", function () { gotoCategoryDefault("customer"); });
+els.railInsight.addEventListener("click", function () { gotoCategoryDefault("insight"); });
+els.railPlatform.addEventListener("click", function () { gotoCategoryDefault("platform"); });
 
 document.querySelectorAll("#biz-app [data-goto]").forEach(function (el) {
 el.addEventListener("click", function () { goto(el.getAttribute("data-goto")); });
