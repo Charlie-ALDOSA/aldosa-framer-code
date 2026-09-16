@@ -221,6 +221,14 @@ els.railHome.classList.remove("active");
 }
 }
 
+// 현재 보고 있는 화면의 카테고리를 레일 아이콘 강조로 표시 (풍선 메뉴가 닫혀도 "지금 위치"는 계속 표시됨)
+function setActiveRail(cat) {
+els.railHome.classList.toggle("active", cat === "home");
+els.railCustomer.classList.toggle("active", cat === "customer");
+els.railInsight.classList.toggle("active", cat === "insight");
+els.railPlatform.classList.toggle("active", cat === "platform");
+}
+
 function togglePin(key) {
 pinned[key] = !pinned[key];
 var btn = pinMap[key];
@@ -246,8 +254,8 @@ if (catOf[viewId] === "insight") flyBtn.classList.add("biz-insight-active");
 }
 
 var cat = catOf[viewId];
-els.railHome.classList.toggle("active", cat === "home");
-if (cat === "home") closeAllFlyouts(null);
+setActiveRail(cat);
+closeAllFlyouts(null); // 메뉴 항목 선택 시 풍선 메뉴 자동으로 닫힘 (고정(📌)된 메뉴는 유지)
 
 els.crumb.innerHTML = catNames[cat] + (cat !== "home" ? " &nbsp;/&nbsp; <b>" + pageNames[viewId] + "</b>" : "");
 els.pageTitle.textContent = pageNames[viewId];
@@ -859,6 +867,12 @@ els.railPlatform.addEventListener("click", function () { toggleFlyout("platform"
 els.pinCustomer.addEventListener("click", function () { togglePin("customer"); });
 els.pinInsight.addEventListener("click", function () { togglePin("insight"); });
 els.pinPlatform.addEventListener("click", function () { togglePin("platform"); });
+
+// 풍선 메뉴 바깥(본문 영역 등)을 클릭하면 고정 안 된 풍선 메뉴는 자동으로 닫힘
+document.addEventListener("click", function (e) {
+if (e.target.closest("#biz-app .biz-flyout") || e.target.closest("#biz-app .biz-rail-item")) return;
+closeAllFlyouts(null);
+});
 
 document.querySelectorAll("#biz-app [data-goto]").forEach(function (el) {
 el.addEventListener("click", function () { goto(el.getAttribute("data-goto")); });
