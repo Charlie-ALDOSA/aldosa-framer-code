@@ -1,13 +1,15 @@
 (function () {
 var API_URL = "https://script.google.com/macros/s/AKfycbyk1khfq0I8XNYDgvPcIa0aTzYayAM7HekoRapfCZc7CEqfDR2Eh3AxUi8ceqemk4aK3A/exec";
 
-var catNames = { home: "홈", customer: "고객서비스 관리", platform: "알도사 서비스 관리" };
+var catNames = { home: "홈", customer: "고객서비스 관리", insight: "인사이트", platform: "알도사 서비스 관리" };
 var pageNames = {
 "home": "대시보드 홈",
 "customer-list": "고객 목록", "customer-inquiry": "회원 문의",
 "product-inventory": "재고 관리", "product-qr": "QR 발행·활성화",
 "order-intake": "입고 현황", "as-status": "AS 진행 현황", "shipment": "출고 관리",
 "settlement-summary": "정산 요약", "settlement-history": "정산 내역",
+"insight-ranking": "모델별 AS 랭킹", "insight-failure-type": "고장 유형 분석",
+"insight-period": "처리 기간 분석", "insight-cost": "처리 비용 분석",
 "usage": "사용량", "billing": "이용료 결제",
 "plan": "요금제", "profile": "기업 정보", "contact": "문의하기"
 };
@@ -17,6 +19,8 @@ var catOf = {
 "product-inventory": "customer", "product-qr": "customer",
 "order-intake": "customer", "as-status": "customer", "shipment": "customer",
 "settlement-summary": "customer", "settlement-history": "customer",
+"insight-ranking": "insight", "insight-failure-type": "insight",
+"insight-period": "insight", "insight-cost": "insight",
 "usage": "platform", "billing": "platform",
 "plan": "platform", "profile": "platform", "contact": "platform"
 };
@@ -27,6 +31,8 @@ var screenIds = {
 "product-inventory": "bizScreenProductInventory", "product-qr": "bizScreenProductQr",
 "order-intake": "bizScreenOrderIntake", "as-status": "bizScreenAsStatus", "shipment": "bizScreenShipment",
 "settlement-summary": "bizScreenSettlementSummary", "settlement-history": "bizScreenSettlementHistory",
+"insight-ranking": "bizScreenInsightRanking", "insight-failure-type": "bizScreenInsightFailureType",
+"insight-period": "bizScreenInsightPeriod", "insight-cost": "bizScreenInsightCost",
 "usage": "bizScreenUsage", "billing": "bizScreenBilling",
 "plan": "bizScreenPlan", "profile": "bizScreenProfile", "contact": "bizScreenContact"
 };
@@ -50,10 +56,13 @@ crumb: document.getElementById("bizCrumb"),
 pageTitle: document.getElementById("bizPageTitle"),
 railHome: document.getElementById("bizRailHome"),
 railCustomer: document.getElementById("bizRailCustomer"),
+railInsight: document.getElementById("bizRailInsight"),
 railPlatform: document.getElementById("bizRailPlatform"),
 flyoutCustomer: document.getElementById("bizFlyoutCustomer"),
+flyoutInsight: document.getElementById("bizFlyoutInsight"),
 flyoutPlatform: document.getElementById("bizFlyoutPlatform"),
 pinCustomer: document.getElementById("bizPinCustomer"),
+pinInsight: document.getElementById("bizPinInsight"),
 pinPlatform: document.getElementById("bizPinPlatform"),
 funnelQuote: document.getElementById("bizFunnelQuote"),
 funnelPayment: document.getElementById("bizFunnelPayment"),
@@ -74,6 +83,16 @@ shipmentCourier: document.getElementById("bizShipmentCourier"),
 shipmentTracking: document.getElementById("bizShipmentTracking"),
 shipmentSubmitBtn: document.getElementById("bizShipmentSubmitBtn"),
 shipmentResult: document.getElementById("bizShipmentResult"),
+insightAvgDays: document.getElementById("bizInsightAvgDays"),
+insightCompletedCount: document.getElementById("bizInsightCompletedCount"),
+insightInProgressCount: document.getElementById("bizInsightInProgressCount"),
+insightMaxDays: document.getElementById("bizInsightMaxDays"),
+insightPeriodBars: document.getElementById("bizInsightPeriodBars"),
+insightAvgCharge: document.getElementById("bizInsightAvgCharge"),
+insightBilledCount: document.getElementById("bizInsightBilledCount"),
+insightAvgQuote: document.getElementById("bizInsightAvgQuote"),
+insightTotalCharge: document.getElementById("bizInsightTotalCharge"),
+insightCostBars: document.getElementById("bizInsightCostBars"),
 currentPlanTag: document.getElementById("bizCurrentPlanTag"),
 planChangeBtn: document.getElementById("bizPlanChangeBtn"),
 contactType: document.getElementById("bizContactType"),
@@ -139,7 +158,7 @@ asReminderResult: document.getElementById("bizAsReminderResult")
 
 var session = null;
 var pendingLoginPassword = "";
-var pinned = { customer: false, platform: false };
+var pinned = { customer: false, insight: false, platform: false };
 var dashboardCache = null;
 var shipmentListCache = [];
 var currentModalMemberId = "";
@@ -174,18 +193,22 @@ return '<span class="biz-status-tag' + (isDone ? " biz-status-done" : "") + '">'
 }
 
 // ── 플라이아웃 열기/닫기 ──────────────────────────────
+var flyoutMap = { customer: els.flyoutCustomer, insight: els.flyoutInsight, platform: els.flyoutPlatform };
+var railMap = { customer: els.railCustomer, insight: els.railInsight, platform: els.railPlatform };
+var pinMap = { customer: els.pinCustomer, insight: els.pinInsight, platform: els.pinPlatform };
+
 function closeAllFlyouts(exceptKey) {
-["customer", "platform"].forEach(function (k) {
+Object.keys(flyoutMap).forEach(function (k) {
 if (k !== exceptKey && !pinned[k]) {
-(k === "customer" ? els.flyoutCustomer : els.flyoutPlatform).classList.remove("biz-show");
-(k === "customer" ? els.railCustomer : els.railPlatform).classList.remove("active");
+flyoutMap[k].classList.remove("biz-show");
+railMap[k].classList.remove("active");
 }
 });
 }
 
 function toggleFlyout(key) {
-var el = key === "customer" ? els.flyoutCustomer : els.flyoutPlatform;
-var railEl = key === "customer" ? els.railCustomer : els.railPlatform;
+var el = flyoutMap[key];
+var railEl = railMap[key];
 var isShown = el.classList.contains("biz-show");
 closeAllFlyouts(key);
 if (isShown && !pinned[key]) {
@@ -200,7 +223,7 @@ els.railHome.classList.remove("active");
 
 function togglePin(key) {
 pinned[key] = !pinned[key];
-var btn = key === "customer" ? els.pinCustomer : els.pinPlatform;
+var btn = pinMap[key];
 btn.classList.toggle("biz-pinned", pinned[key]);
 btn.title = pinned[key] ? "고정됨 (다시 클릭 시 해제)" : "펼침 고정";
 }
@@ -219,6 +242,7 @@ var flyBtn = document.querySelector('#biz-app .biz-fly-item[data-goto="' + viewI
 if (flyBtn) {
 flyBtn.classList.add("biz-active");
 if (catOf[viewId] === "platform") flyBtn.classList.add("biz-platform-active");
+if (catOf[viewId] === "insight") flyBtn.classList.add("biz-insight-active");
 }
 
 var cat = catOf[viewId];
@@ -229,6 +253,7 @@ els.crumb.innerHTML = catNames[cat] + (cat !== "home" ? " &nbsp;/&nbsp; <b>" + p
 els.pageTitle.textContent = pageNames[viewId];
 
 if (viewId === "shipment") loadShipmentList();
+if (viewId === "insight-period" || viewId === "insight-cost") loadInsightStats();
 }
 
 function goHome() {
@@ -792,6 +817,35 @@ els.shipmentResult.textContent = "네트워크 오류가 발생했습니다.";
 });
 }
 
+// ── 인사이트: 처리 기간 / 처리 비용 분석 ────────────────
+function renderBarList(container, buckets, unit) {
+var max = Math.max.apply(null, buckets.map(function (b) { return b.count; }).concat([1]));
+container.innerHTML = buckets.map(function (b) {
+var pct = Math.round((b.count / max) * 100);
+return "<div class='biz-bar-row'><div class='biz-bar-label'>" + esc(b.label) + "</div>" +
+"<div class='biz-bar-track'><div class='biz-bar-fill' style='width:" + pct + "%;'></div></div>" +
+"<div class='biz-bar-count'>" + b.count + unit + "</div></div>";
+}).join("");
+}
+
+function loadInsightStats() {
+callApi({ action: "enterpriseGetProcessingStats", enterprise_id: session.enterprise_id }).then(function (res) {
+if (!res.success) return;
+var p = res.period, c = res.cost;
+els.insightAvgDays.textContent = p.avg_days + "일";
+els.insightCompletedCount.textContent = p.completed_count + "건";
+els.insightInProgressCount.textContent = p.in_progress_count + "건";
+els.insightMaxDays.textContent = p.max_days + "일";
+renderBarList(els.insightPeriodBars, p.buckets, "건");
+
+els.insightAvgCharge.textContent = Number(c.avg_charge || 0).toLocaleString() + "원";
+els.insightBilledCount.textContent = c.billed_count + "건";
+els.insightAvgQuote.textContent = Number(c.avg_quote || 0).toLocaleString() + "원";
+els.insightTotalCharge.textContent = Number(c.total_charge || 0).toLocaleString() + "원";
+renderBarList(els.insightCostBars, c.buckets, "건");
+});
+}
+
 // ── 이벤트 바인딩 ────────────────────────────────────
 els.loginBtn.addEventListener("click", doLogin);
 els.loginPw.addEventListener("keydown", function (e) { if (e.key === "Enter") doLogin(); });
@@ -800,8 +854,10 @@ els.logoutBtn.addEventListener("click", logout);
 
 els.railHome.addEventListener("click", goHome);
 els.railCustomer.addEventListener("click", function () { toggleFlyout("customer"); });
+els.railInsight.addEventListener("click", function () { toggleFlyout("insight"); });
 els.railPlatform.addEventListener("click", function () { toggleFlyout("platform"); });
 els.pinCustomer.addEventListener("click", function () { togglePin("customer"); });
+els.pinInsight.addEventListener("click", function () { togglePin("insight"); });
 els.pinPlatform.addEventListener("click", function () { togglePin("platform"); });
 
 document.querySelectorAll("#biz-app [data-goto]").forEach(function (el) {
