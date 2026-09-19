@@ -137,7 +137,28 @@ asPartnerResult: document.getElementById("bizAsPartnerResult"),
 asNoteTbody: document.getElementById("bizAsNoteTbody"),
 asNoteInput: document.getElementById("bizAsNoteInput"),
 asNoteAddBtn: document.getElementById("bizAsNoteAddBtn"),
-asNoteResult: document.getElementById("bizAsNoteResult")
+asNoteResult: document.getElementById("bizAsNoteResult"),
+assetTbody: document.getElementById("bizAssetTbody"),
+qrTotalCount: document.getElementById("bizQrTotalCount"),
+qrActiveCount: document.getElementById("bizQrActiveCount"),
+qrClaimedCount: document.getElementById("bizQrClaimedCount"),
+qrBrand: document.getElementById("bizQrBrand"),
+qrProductName: document.getElementById("bizQrProductName"),
+qrCount: document.getElementById("bizQrCount"),
+qrGenerateBtn: document.getElementById("bizQrGenerateBtn"),
+qrGenerateResult: document.getElementById("bizQrGenerateResult"),
+qrTbody: document.getElementById("bizQrTbody"),
+intakeBrand: document.getElementById("bizIntakeBrand"),
+intakeModel: document.getElementById("bizIntakeModel"),
+intakeSerial: document.getElementById("bizIntakeSerial"),
+intakeSymptom: document.getElementById("bizIntakeSymptom"),
+intakeOfr: document.getElementById("bizIntakeOfr"),
+intakeName: document.getElementById("bizIntakeName"),
+intakePhone: document.getElementById("bizIntakePhone"),
+intakePurchaseDate: document.getElementById("bizIntakePurchaseDate"),
+intakeSubmitBtn: document.getElementById("bizIntakeSubmitBtn"),
+intakeResult: document.getElementById("bizIntakeResult"),
+intakeRecentTbody: document.getElementById("bizIntakeRecentTbody")
 };
 
 var session = null;
@@ -148,6 +169,10 @@ var currentModalMemberId = "";
 var asListCache = [];
 var currentAsRequestId = "";
 var repairPartnersCache = [];
+var assetListCache = [];
+var codeListCache = [];
+var intakeSymptomsLoaded = false;
+var intakeRecentCache = [];
 
 function showView(name) {
 els.loginView.hidden = name !== "login";
@@ -234,6 +259,9 @@ els.pageTitle.textContent = pageNames[viewId];
 if (viewId === "as-status") loadAsList();
 if (viewId === "shipment") loadShipmentList();
 if (viewId === "insight-period" || viewId === "insight-cost") loadInsightStats();
+if (viewId === "product-inventory") loadAssetList();
+if (viewId === "product-qr") loadCodeList();
+if (viewId === "order-intake") { loadIntakeSymptoms(); renderIntakeRecent(); }
 }
 
 function goHome() {
@@ -947,6 +975,151 @@ renderBarList(els.insightCostBars, c.buckets, "건");
 });
 }
 
+// ── 재고 관리 (등록된 자산 목록 — 연결된 회원 소유 + 이 매장 접수로 생성된 자산) ──
+function renderAssetRow(a) {
+	return "<tr><td><div class='biz-brand-name'>" + esc(a.brand) + "</div><div class='biz-model-name'>" + esc(a.model || "-") + "</div></td>" +
+		"<td>" + esc(a.serial || "-") + "</td>" +
+		"<td>" + esc(a.brand_type || "-") + "</td>" +
+		"<td>" + esc(a.status || "-") + "</td>" +
+		"<td>" + esc(a.intake_name || "-") + (a.intake_phone ? "<br>" + esc(a.intake_phone) : "") + "</td>" +
+		"<td>" + fmtDateDot(a.registered_at) + "</td></tr>";
+}
+
+function renderAssetList(list) {
+	assetListCache = list;
+	els.assetTbody.innerHTML = list.map(renderAssetRow).join("") || "<tr><td colspan='6' class='biz-empty-cell'>등록된 자산이 없습니다.</td></tr>";
+}
+
+function loadAssetList() {
+	els.assetTbody.innerHTML = "<tr><td colspan='6' class='biz-empty-cell'>불러오는 중...</td></tr>";
+	callApi({ action: "enterpriseGetAssets", enterprise_id: session.enterprise_id }).then(function (res) {
+		if (!res.success) { els.assetTbody.innerHTML = "<tr><td colspan='6' class='biz-empty-cell'>불러오지 못했습니다.</td></tr>"; return; }
+		renderAssetList(res.assets || []);
+	}).catch(function () {
+		els.assetTbody.innerHTML = "<tr><td colspan='6' class='biz-empty-cell'>불러오지 못했습니다.</td></tr>";
+	});
+}
+
+// ── QR 발행·활성화 (사전등록용 쥬얼리 코드 — sku_store_name으로 이 기업 스코프) ──
+function renderCodeRow(c) {
+	var canReactivate = c.status === "미사용잠금";
+	return "<tr><td>" + esc(c.code) + "</td>" +
+		"<td>" + esc(c.sku_brand || "-") + " " + esc(c.sku_product_name || "") + "</td>" +
+		"<td>" + esc(c.status) + "</td>" +
+		"<td>" + fmtDateDot(c.created_at) + "</td>" +
+		"<td>" + (canReactivate ? "<button type='button' class='biz-btn-sm biz-btn-outline' data-act='code-reactivate' data-code-id='" + esc(c.code_id) + "'>재활성화</button>" : "") + "</td></tr>";
+}
+
+function renderCodeList(list) {
+	codeListCache = list;
+	els.qrTbody.innerHTML = list.map(renderCodeRow).join("") || "<tr><td colspan='5' class='biz-empty-cell'>발행된 QR 코드가 없습니다.</td></tr>";
+	var total = list.length, claimed = 0, active = 0;
+	list.forEach(function (c) {
+		if (c.status === "사용완료") claimed++;
+		else if (c.status === "미사용") active++;
+	});
+	els.qrTotalCount.textContent = total;
+	els.qrActiveCount.textContent = active;
+	els.qrClaimedCount.textContent = claimed;
+}
+
+function loadCodeList() {
+	els.qrTbody.innerHTML = "<tr><td colspan='5' class='biz-empty-cell'>불러오는 중...</td></tr>";
+	callApi({ action: "enterpriseGetCodes", enterprise_id: session.enterprise_id }).then(function (res) {
+		if (!res.success) { els.qrTbody.innerHTML = "<tr><td colspan='5' class='biz-empty-cell'>불러오지 못했습니다.</td></tr>"; return; }
+		renderCodeList(res.codes || []);
+	}).catch(function () {
+		els.qrTbody.innerHTML = "<tr><td colspan='5' class='biz-empty-cell'>불러오지 못했습니다.</td></tr>";
+	});
+}
+
+function generateCodes() {
+	var brand = els.qrBrand.value.trim();
+	var productName = els.qrProductName.value.trim();
+	var count = parseInt(els.qrCount.value, 10);
+	els.qrGenerateResult.hidden = true;
+	if (!brand || !productName || !count) {
+		els.qrGenerateResult.hidden = false;
+		els.qrGenerateResult.textContent = "브랜드, 상품명, 발행 수량을 모두 입력해주세요.";
+		return;
+	}
+	els.qrGenerateBtn.disabled = true;
+	callApi({ action: "enterpriseBulkGenerateJewelryCodes", enterprise_id: session.enterprise_id, brand: brand, product_name: productName, count: count })
+		.then(function (res) {
+			els.qrGenerateBtn.disabled = false;
+			els.qrGenerateResult.hidden = false;
+			els.qrGenerateResult.textContent = res.success ? (res.count + "개의 QR 코드가 발행되었습니다.") : (res.message || "발행에 실패했습니다.");
+			if (res.success) {
+				els.qrBrand.value = ""; els.qrProductName.value = ""; els.qrCount.value = "";
+				loadCodeList();
+			}
+		}).catch(function () {
+			els.qrGenerateBtn.disabled = false;
+			els.qrGenerateResult.hidden = false;
+			els.qrGenerateResult.textContent = "네트워크 오류가 발생했습니다.";
+		});
+}
+
+function reactivateCode(codeId) {
+	callApi({ action: "enterpriseReactivateCode", enterprise_id: session.enterprise_id, code_id: codeId }).then(function (res) {
+		alert(res.message || (res.success ? "재활성화되었습니다." : "재활성화에 실패했습니다."));
+		if (res.success) loadCodeList();
+	}).catch(function () { alert("네트워크 오류가 발생했습니다."); });
+}
+
+// ── 입고 현황 / AS 신규 접수 (이 화면에서 접수하면 즉시 AS_Requests + Assets에 등록되고,
+//   문자 발송까지 createASRequestCore가 처리 — 이후 진행은 "AS 진행 현황"에서) ──
+function loadIntakeSymptoms() {
+	if (intakeSymptomsLoaded) return;
+	callApi({ action: "getASOptions", category: "watch" }).then(function (res) {
+		if (!res.success) return;
+		intakeSymptomsLoaded = true;
+		els.intakeSymptom.innerHTML = "<option value=''>증상 선택</option>" +
+			(res.symptoms || []).map(function (s) { return "<option>" + esc(s) + "</option>"; }).join("");
+	});
+}
+
+function renderIntakeRecent() {
+	els.intakeRecentTbody.innerHTML = intakeRecentCache.map(function (r) {
+		return "<tr><td>" + esc(r.request_id) + "</td><td>" + esc((r.brand + " " + (r.model || "")).trim()) + "</td>" +
+			"<td>" + esc(r.intake_name) + "</td><td>" + esc(r.time) + "</td></tr>";
+	}).join("") || "<tr><td colspan='4' class='biz-empty-cell'>아직 접수한 건이 없습니다.</td></tr>";
+}
+
+function submitIntake() {
+	var brand = els.intakeBrand.value.trim();
+	var name = els.intakeName.value.trim();
+	var phone = els.intakePhone.value.trim();
+	els.intakeResult.hidden = true;
+	if (!brand || !name || !phone) {
+		els.intakeResult.hidden = false;
+		els.intakeResult.textContent = "브랜드, 의뢰인 성명, 연락처는 필수입니다.";
+		return;
+	}
+	els.intakeSubmitBtn.disabled = true;
+	callApi({
+		action: "enterpriseCreateASRequest", enterprise_id: session.enterprise_id,
+		brand: brand, model: els.intakeModel.value.trim(), serial: els.intakeSerial.value.trim(),
+		symptom: els.intakeSymptom.value, ofr_number: els.intakeOfr.value.trim(),
+		intake_name: name, intake_phone: phone, purchase_date: els.intakePurchaseDate.value
+	}).then(function (res) {
+		els.intakeSubmitBtn.disabled = false;
+		els.intakeResult.hidden = false;
+		els.intakeResult.textContent = res.success ? ("AS 접수가 등록되었습니다. (접수번호 " + res.request_id + ")") : (res.message || "접수에 실패했습니다.");
+		if (res.success) {
+			intakeRecentCache.unshift({ request_id: res.request_id, brand: brand, model: els.intakeModel.value.trim(), intake_name: name, time: new Date().toLocaleString("ko-KR") });
+			renderIntakeRecent();
+			els.intakeBrand.value = ""; els.intakeModel.value = ""; els.intakeSerial.value = "";
+			els.intakeSymptom.value = ""; els.intakeOfr.value = ""; els.intakeName.value = "";
+			els.intakePhone.value = ""; els.intakePurchaseDate.value = "";
+		}
+	}).catch(function () {
+		els.intakeSubmitBtn.disabled = false;
+		els.intakeResult.hidden = false;
+		els.intakeResult.textContent = "네트워크 오류가 발생했습니다.";
+	});
+}
+
 // ── 이벤트 바인딩 ────────────────────────────────────
 els.loginBtn.addEventListener("click", doLogin);
 els.loginPw.addEventListener("keydown", function (e) { if (e.key === "Enter") doLogin(); });
@@ -1058,6 +1231,15 @@ deleteAsItem(btn.getAttribute("data-item-id"));
 });
 els.asPartnerAssignBtn.addEventListener("click", assignPartner);
 els.asNoteAddBtn.addEventListener("click", addAsNote);
+
+els.qrGenerateBtn.addEventListener("click", generateCodes);
+els.qrTbody.addEventListener("click", function (e) {
+	var btn = e.target.closest("[data-act='code-reactivate']");
+	if (!btn) return;
+	reactivateCode(btn.getAttribute("data-code-id"));
+});
+
+els.intakeSubmitBtn.addEventListener("click", submitIntake);
 
 if (!restoreSession()) showView("login");
 })();
