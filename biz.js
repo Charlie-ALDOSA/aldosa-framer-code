@@ -73,6 +73,9 @@ usageCustomer: document.getElementById("bizUsageCustomer"),
 usageAs: document.getElementById("bizUsageAs"),
 assetCustTbody: document.getElementById("bizAssetCustTbody"),
 customerSearch: document.getElementById("bizCustomerSearch"),
+customerSearchBtn: document.getElementById("bizCustomerSearchBtn"),
+customerSearchResetBtn: document.getElementById("bizCustomerSearchResetBtn"),
+customerSearchResult: document.getElementById("bizCustomerSearchResult"),
 customerDetailBackBtn: document.getElementById("bizCustomerDetailBackBtn"),
 customerDetailName: document.getElementById("bizCustomerDetailName"),
 customerDetailPhone: document.getElementById("bizCustomerDetailPhone"),
@@ -173,7 +176,6 @@ var session = null;
 var pendingLoginPassword = "";
 var dashboardCache = null;
 var customerGroupsCache = [];
-var customerSearchKeyword = "";
 var currentDetailMemberId = "";
 var shipmentListCache = [];
 var currentModalMemberId = "";
@@ -412,14 +414,43 @@ byId[r.member_id].assets.push({ asset: r.asset, registered_at: r.registered_at }
 return order.map(function (id) { return byId[id]; });
 }
 
-function filterCustomerGroups(groups, keyword) {
-var kw = (keyword || "").trim().toLowerCase();
+// 연락처 검색은 하이픈·공백 유무와 무관하게 매칭되도록 숫자만 남겨서 비교합니다.
+function normalizePhoneDigits(v) {
+return String(v || "").replace(/[^0-9]/g, "");
+}
+
+// 2026-09-29 고객 목록 검색 UX 개편 — 필드(이름/연락처/이메일) 선택 + 검색 버튼 방식으로 변경.
+function filterCustomerGroups(groups, field, keyword) {
+var kw = (keyword || "").trim();
 if (!kw) return groups;
-return groups.filter(function (g) {
-return (g.name || "").toLowerCase().indexOf(kw) !== -1 ||
-(g.phone || "").toLowerCase().indexOf(kw) !== -1 ||
-(g.email || "").toLowerCase().indexOf(kw) !== -1;
-});
+if (field === "phone") {
+var kwDigits = normalizePhoneDigits(kw);
+if (!kwDigits) return groups;
+return groups.filter(function (g) { return normalizePhoneDigits(g.phone).indexOf(kwDigits) !== -1; });
+}
+var kwLower = kw.toLowerCase();
+if (field === "email") {
+return groups.filter(function (g) { return (g.email || "").toLowerCase().indexOf(kwLower) !== -1; });
+}
+return groups.filter(function (g) { return (g.name || "").toLowerCase().indexOf(kwLower) !== -1; });
+}
+
+function getSelectedCustomerSearchField() {
+var checked = document.querySelector('#biz-app input[name="bizCustomerSearchField"]:checked');
+return checked ? checked.value : "name";
+}
+
+function applyCustomerSearch() {
+var field = getSelectedCustomerSearchField();
+var keyword = els.customerSearch.value;
+var filtered = filterCustomerGroups(customerGroupsCache, field, keyword);
+renderCustomerGroups(filtered);
+if (keyword.trim()) {
+els.customerSearchResult.hidden = false;
+els.customerSearchResult.textContent = filtered.length ? ("검색 결과: " + filtered.length + "명") : "일치하는 고객이 없습니다.";
+} else {
+els.customerSearchResult.hidden = true;
+}
 }
 
 function renderCustomerGroups(groups) {
@@ -889,7 +920,7 @@ els.usageCustomer.textContent = res.customer_count;
 els.usageAs.textContent = res.as_count;
 
 customerGroupsCache = groupCustomers(res.all_asset_customers || res.recent_asset_customers || []);
-renderCustomerGroups(filterCustomerGroups(customerGroupsCache, customerSearchKeyword));
+applyCustomerSearch();
 });
 
 callApi({ action: "getEnterpriseFunnelCounts", enterprise_id: session.enterprise_id }).then(function (res) {
@@ -1236,9 +1267,11 @@ var btn = e.target.closest("[data-member-id]");
 if (!btn) return;
 openCustomerDetail(btn.getAttribute("data-member-id"));
 });
-els.customerSearch.addEventListener("input", function () {
-customerSearchKeyword = els.customerSearch.value;
-renderCustomerGroups(filterCustomerGroups(customerGroupsCache, customerSearchKeyword));
+els.customerSearchBtn.addEventListener("click", applyCustomerSearch);
+els.customerSearch.addEventListener("keydown", function (e) { if (e.key === "Enter") applyCustomerSearch(); });
+els.customerSearchResetBtn.addEventListener("click", function () {
+els.customerSearch.value = "";
+applyCustomerSearch();
 });
 els.customerDetailBackBtn.addEventListener("click", function () { goto("customer-list"); });
 els.customerDetailManageBtn.addEventListener("click", function () {
