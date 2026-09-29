@@ -4,7 +4,7 @@ var API_URL = "https://script.google.com/macros/s/AKfycbyk1khfq0I8XNYDgvPcIa0aTz
 var catNames = { home: "홈", customer: "고객서비스 관리", insight: "인사이트", platform: "알도사 서비스 관리" };
 var pageNames = {
 "home": "대시보드 홈",
-"customer-list": "고객 목록", "customer-inquiry": "회원 문의",
+"customer-list": "고객 목록", "customer-detail": "고객 상세정보", "customer-inquiry": "회원 문의",
 "product-inventory": "재고 관리", "product-qr": "QR 발행·활성화",
 "order-intake": "입고 현황", "as-status": "AS 진행 현황", "shipment": "출고 관리",
 "settlement-summary": "정산 요약", "settlement-history": "정산 내역",
@@ -15,7 +15,7 @@ var pageNames = {
 };
 var catOf = {
 "home": "home",
-"customer-list": "customer", "customer-inquiry": "customer",
+"customer-list": "customer", "customer-detail": "customer", "customer-inquiry": "customer",
 "product-inventory": "customer", "product-qr": "customer",
 "order-intake": "customer", "as-status": "customer", "shipment": "customer",
 "settlement-summary": "customer", "settlement-history": "customer",
@@ -27,7 +27,7 @@ var catOf = {
 
 var screenIds = {
 "home": "bizScreenHome",
-"customer-list": "bizScreenCustomerList", "customer-inquiry": "bizScreenCustomerInquiry",
+"customer-list": "bizScreenCustomerList", "customer-detail": "bizScreenCustomerDetail", "customer-inquiry": "bizScreenCustomerInquiry",
 "product-inventory": "bizScreenProductInventory", "product-qr": "bizScreenProductQr",
 "order-intake": "bizScreenOrderIntake", "as-status": "bizScreenAsStatus", "shipment": "bizScreenShipment",
 "settlement-summary": "bizScreenSettlementSummary", "settlement-history": "bizScreenSettlementHistory",
@@ -72,6 +72,14 @@ summaryAs: document.getElementById("bizSummaryAs"),
 usageCustomer: document.getElementById("bizUsageCustomer"),
 usageAs: document.getElementById("bizUsageAs"),
 assetCustTbody: document.getElementById("bizAssetCustTbody"),
+customerSearch: document.getElementById("bizCustomerSearch"),
+customerDetailBackBtn: document.getElementById("bizCustomerDetailBackBtn"),
+customerDetailName: document.getElementById("bizCustomerDetailName"),
+customerDetailPhone: document.getElementById("bizCustomerDetailPhone"),
+customerDetailEmail: document.getElementById("bizCustomerDetailEmail"),
+customerDetailJoined: document.getElementById("bizCustomerDetailJoined"),
+customerDetailManageBtn: document.getElementById("bizCustomerDetailManageBtn"),
+customerDetailAssetTbody: document.getElementById("bizCustomerDetailAssetTbody"),
 asTbody: document.getElementById("bizAsTbody"),
 shipmentTbody: document.getElementById("bizShipmentTbody"),
 shipmentSelectAll: document.getElementById("bizShipmentSelectAll"),
@@ -164,6 +172,9 @@ intakeRecentTbody: document.getElementById("bizIntakeRecentTbody")
 var session = null;
 var pendingLoginPassword = "";
 var dashboardCache = null;
+var customerGroupsCache = [];
+var customerSearchKeyword = "";
+var currentDetailMemberId = "";
 var shipmentListCache = [];
 var currentModalMemberId = "";
 var asListCache = [];
@@ -381,11 +392,55 @@ return "";
 }
 
 // ── 렌더링 ───────────────────────────────────────────
-function renderCustomers(list) {
-els.assetCustTbody.innerHTML = list.map(function (r) {
-return "<tr><td>" + esc(r.name) + "</td><td>" + esc(r.asset) + "</td><td>" + fmtDate(r.registered_at) + "</td>" +
-"<td>" + (r.member_id ? "<button type='button' class='biz-btn-link' data-member-id='" + esc(r.member_id) + "' data-member-name='" + esc(r.name) + "'>관리</button>" : "") + "</td></tr>";
-}).join("") || "<tr><td colspan='4' class='biz-empty-cell'>등록된 고객·자산 내역이 없습니다.</td></tr>";
+// 고객 목록: getEnterpriseDashboard가 내려주는 자산 단위(1자산=1행) 목록을 member_id 기준으로
+// 프론트에서 회원 단위로 집계합니다. (2026-09-28 고객 목록 화면 개편 — 1차 프론트 집계, 백엔드는
+// getEnterpriseDashboard에 email/phone/member_created_at 필드만 추가했습니다.)
+function groupCustomers(list) {
+var byId = {};
+var order = [];
+(list || []).forEach(function (r) {
+if (!r.member_id) return;
+if (!byId[r.member_id]) {
+byId[r.member_id] = {
+member_id: r.member_id, name: r.name || "", phone: r.phone || "", email: r.email || "",
+member_created_at: r.member_created_at || "", assets: []
+};
+order.push(r.member_id);
+}
+byId[r.member_id].assets.push({ asset: r.asset, registered_at: r.registered_at });
+});
+return order.map(function (id) { return byId[id]; });
+}
+
+function filterCustomerGroups(groups, keyword) {
+var kw = (keyword || "").trim().toLowerCase();
+if (!kw) return groups;
+return groups.filter(function (g) {
+return (g.name || "").toLowerCase().indexOf(kw) !== -1 ||
+(g.phone || "").toLowerCase().indexOf(kw) !== -1 ||
+(g.email || "").toLowerCase().indexOf(kw) !== -1;
+});
+}
+
+function renderCustomerGroups(groups) {
+els.assetCustTbody.innerHTML = groups.map(function (g) {
+return "<tr><td>" + esc(g.name) + "</td><td>" + esc(g.phone || "-") + "</td><td>" + esc(g.email || "-") + "</td><td>" + g.assets.length + "</td>" +
+"<td><button type='button' class='biz-btn-link' data-member-id='" + esc(g.member_id) + "'>세부사항 보기</button></td></tr>";
+}).join("") || "<tr><td colspan='5' class='biz-empty-cell'>등록된 고객·자산 내역이 없습니다.</td></tr>";
+}
+
+function openCustomerDetail(memberId) {
+var g = customerGroupsCache.filter(function (x) { return x.member_id === memberId; })[0];
+if (!g) return;
+currentDetailMemberId = memberId;
+els.customerDetailName.textContent = g.name || "-";
+els.customerDetailPhone.textContent = g.phone || "-";
+els.customerDetailEmail.textContent = g.email || "-";
+els.customerDetailJoined.textContent = g.member_created_at ? fmtDate(g.member_created_at) : "-";
+els.customerDetailAssetTbody.innerHTML = g.assets.map(function (a) {
+return "<tr><td>" + esc(a.asset) + "</td><td>" + fmtDate(a.registered_at) + "</td></tr>";
+}).join("") || "<tr><td colspan='2' class='biz-empty-cell'>등록된 자산이 없습니다.</td></tr>";
+goto("customer-detail");
 }
 
 // ── 고객 관리 모달 (마일리지/바우처/결제) ──────────────
@@ -833,7 +888,8 @@ els.summaryCode.textContent = res.claim_code_count != null ? res.claim_code_coun
 els.usageCustomer.textContent = res.customer_count;
 els.usageAs.textContent = res.as_count;
 
-renderCustomers(res.all_asset_customers || res.recent_asset_customers || []);
+customerGroupsCache = groupCustomers(res.all_asset_customers || res.recent_asset_customers || []);
+renderCustomerGroups(filterCustomerGroups(customerGroupsCache, customerSearchKeyword));
 });
 
 callApi({ action: "getEnterpriseFunnelCounts", enterprise_id: session.enterprise_id }).then(function (res) {
@@ -1178,7 +1234,16 @@ els.profileResult.textContent = "정보 수정 기능은 준비 중입니다. �
 els.assetCustTbody.addEventListener("click", function (e) {
 var btn = e.target.closest("[data-member-id]");
 if (!btn) return;
-openMemberModal(btn.getAttribute("data-member-id"), btn.getAttribute("data-member-name"));
+openCustomerDetail(btn.getAttribute("data-member-id"));
+});
+els.customerSearch.addEventListener("input", function () {
+customerSearchKeyword = els.customerSearch.value;
+renderCustomerGroups(filterCustomerGroups(customerGroupsCache, customerSearchKeyword));
+});
+els.customerDetailBackBtn.addEventListener("click", function () { goto("customer-list"); });
+els.customerDetailManageBtn.addEventListener("click", function () {
+var g = customerGroupsCache.filter(function (x) { return x.member_id === currentDetailMemberId; })[0];
+openMemberModal(currentDetailMemberId, g ? g.name : "");
 });
 els.memberModalCloseBtn.addEventListener("click", closeMemberModal);
 els.memberModal.addEventListener("click", function (e) {
