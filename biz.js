@@ -6,7 +6,7 @@ var pageNames = {
 "home": "대시보드 홈",
 "customer-list": "고객 목록", "customer-detail": "고객 상세정보", "customer-inquiry": "회원 문의",
 "product-inventory": "재고 관리", "product-qr": "QR 발행·활성화",
-"order-intake": "입고 관리", "as-status": "AS 진행 현황", "shipment": "출고 관리",
+"order-intake": "입고 관리", "as-status": "AS 진행 관리", "shipment": "출고 관리",
 "settlement-summary": "정산 요약", "settlement-history": "정산 내역",
 "insight-ranking": "모델별 AS 랭킹", "insight-failure-type": "고장 유형 분석",
 "insight-period": "처리 기간 분석", "insight-cost": "처리 비용 분석",
@@ -136,6 +136,7 @@ asModalCloseBtn: document.getElementById("bizAsModalCloseBtn"),
 asModalTitle: document.getElementById("bizAsModalTitle"),
 asModalMeta: document.getElementById("bizAsModalMeta"),
 asItemTbody: document.getElementById("bizAsItemTbody"),
+asItemType: document.getElementById("bizAsItemType"),
 asItemName: document.getElementById("bizAsItemName"),
 asItemCost: document.getElementById("bizAsItemCost"),
 asItemNote: document.getElementById("bizAsItemNote"),
@@ -217,6 +218,17 @@ try { return String(iso).substring(0, 10); } catch (e) { return ""; }
 
 function fmtDateDot(iso) {
 return fmtDate(iso).replace(/-/g, ".");
+}
+
+// 결제재알림 발송이력 "MM.DD HH:mm" 표시용 (Asia/Seoul 고정 — 담당자 브라우저 시간대 무관하게 동일하게 보이도록)
+function fmtDateTimeDot(iso) {
+if (!iso) return "";
+var d = new Date(iso);
+if (isNaN(d.getTime())) return "";
+var parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Seoul", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).formatToParts(d);
+var map = {};
+parts.forEach(function (p) { map[p.type] = p.value; });
+return map.month + "." + map.day + " " + map.hour + ":" + map.minute;
 }
 
 // datetime-local input(브라우저 로컬시간 기준) ↔ ISO(UTC) 문자열 변환 — "날짜 확인/수정" 인라인 편집용
@@ -600,8 +612,8 @@ showMemberModalResult("네트워크 오류가 발생했습니다.");
 });
 }
 
-// ── AS 진행 현황: 진행단계/견적/출고정보는 표에 인라인으로 처리하고,
-//   이 모달은 견적 항목·수리처 배정·CS 메모("항목보기"/"메모" 버튼 공용)만 담당합니다. (2026-09-16 정보량 매칭 개편)
+// ── AS 진행 관리: 진행단계/견적/출고정보는 표에 인라인으로 처리하고,
+//   이 모달은 견적 항목·수리처 배정·CS 메모("상세관리" 버튼 공용)만 담당합니다. (2026-09-16 정보량 매칭 개편, 2026-10-02 "상세관리" 통합)
 var STAGE_KEYS = ["received", "quoted", "notified", "paid", "repaired", "shipped"];
 var STAGE_SHORT = { received: "접수", quoted: "견적", notified: "안내", paid: "입금", repaired: "수리", shipped: "출고" };
 
@@ -612,6 +624,7 @@ els.asModalTitle.textContent = cached ? ((cached.brand + " " + cached.model).tri
 els.asModalMeta.textContent = cached ?
 ("접수매장: " + (cached.store_name || "-") + " · 의뢰인: " + (cached.intake_name || "-") + " (" + (cached.intake_phone || "-") + ") · 시리얼: " + (cached.serial || "미등록")) : "-";
 els.asItemResult.hidden = true;
+els.asItemType.value = "오버홀";
 els.asPartnerResult.hidden = true;
 els.asNoteResult.hidden = true;
 els.asNoteInput.value = "";
@@ -656,7 +669,7 @@ els.asItemAddBtn.disabled = false;
 els.asItemResult.hidden = false;
 els.asItemResult.textContent = res.success ? "항목이 추가되었습니다." : (res.message || "추가에 실패했습니다.");
 if (res.success) {
-els.asItemName.value = ""; els.asItemCost.value = ""; els.asItemNote.value = "";
+els.asItemType.value = "오버홀"; els.asItemName.value = ""; els.asItemCost.value = ""; els.asItemNote.value = "";
 loadAsItems(currentAsRequestId);
 }
 }).catch(function () {
@@ -738,7 +751,11 @@ function handleReminder(btn) {
 var requestId = btn.getAttribute("data-request-id");
 btn.disabled = true;
 callApi({ action: "enterpriseSendPaymentReminder", enterprise_id: session.enterprise_id, request_id: requestId })
-.then(function (res) { btn.disabled = false; alert(res.message || (res.success ? "발송되었습니다." : "발송에 실패했습니다.")); })
+.then(function (res) {
+btn.disabled = false;
+alert(res.message || (res.success ? "발송되었습니다." : "발송에 실패했습니다."));
+if (res.success) loadAsList(); // 발송이력(발송 N회 · 최근 일시)을 바로 반영
+})
 .catch(function () { btn.disabled = false; alert("네트워크 오류가 발생했습니다."); });
 }
 
@@ -850,11 +867,9 @@ var labels = STAGE_KEYS.map(function (s) {
 var done = !!r["stage_" + s];
 return "<span class='" + (done ? "biz-done" : "") + "'>" + (done ? fmtDateDot(r["stage_" + s]).substring(5) : STAGE_SHORT[s]) + "</span>";
 }).join("");
-var reminderDisabled = !!r.stage_paid;
 return "<div class='biz-stage-track'>" + dots + "</div>" +
 "<div class='biz-stage-labels'>" + labels + "</div>" +
 "<button type='button' class='biz-stage-edit-link' data-act='date-edit' data-request-id='" + esc(r.request_id) + "'>날짜 확인/수정</button>" +
-"<div class='biz-payment-reminder'><button type='button' class='biz-btn-sm " + (reminderDisabled ? "biz-btn-disabled-sm" : "biz-btn-outline-red") + "' data-act='reminder' data-request-id='" + esc(r.request_id) + "'" + (reminderDisabled ? " disabled" : "") + ">결제 재알림</button></div>" +
 shipBoxHtml(r);
 }
 
@@ -864,38 +879,69 @@ return "<div class='biz-billing-edit'>" +
 "<input type='number' class='biz-quote-input' value='" + esc(r.quote_amount || "") + "' placeholder='견적' />" +
 "<input type='number' class='biz-charge-input' value='" + esc(r.charge_amount || "") + "' placeholder='청구' />" +
 "<button type='button' class='biz-btn-sm biz-btn-dark' data-act='billing-save' data-request-id='" + id + "'>저장</button>" +
-"</div>";
+"</div>" +
+"<div class='biz-billing-note'>선택 항목에 따라 청구금액이 견적과 다를 수 있습니다</div>";
+}
+
+// 결제재알림: 견적안내 전/입금완료는 비활성+사유 표시, 그 외엔 발송이력("발송 N회 · 최근 MM.DD HH:mm") 표시
+function paymentReminderHtml(r) {
+var id = esc(r.request_id);
+if (!r.stage_notified) {
+return { button: "<button type='button' class='biz-btn-xs biz-btn-disabled-sm' disabled>결제재알림</button>", sub: "견적안내 전" };
+}
+if (r.stage_paid) {
+return { button: "<button type='button' class='biz-btn-xs biz-btn-disabled-sm' disabled>결제재알림</button>", sub: "입금완료" };
+}
+var historyText = (r.payment_reminder_count > 0)
+? ("발송 " + r.payment_reminder_count + "회 · 최근 " + fmtDateTimeDot(r.payment_reminder_last_sent))
+: "";
+return {
+button: "<button type='button' class='biz-btn-xs biz-btn-outline-red' data-act='reminder' data-request-id='" + id + "'>결제재알림</button>",
+sub: historyText
+};
+}
+
+function actionCellHtml(r) {
+var id = esc(r.request_id);
+var reminder = paymentReminderHtml(r);
+return "<div class='biz-as-actions'>" +
+"<button type='button' class='biz-btn-xs biz-btn-dark' data-act='manage' data-request-id='" + id + "'>상세관리</button>" +
+reminder.button +
+"</div>" +
+(reminder.sub ? "<div class='biz-reminder-sub'>" + esc(reminder.sub) + "</div>" : "");
 }
 
 function renderAsRow(r) {
 var id = esc(r.request_id);
 var snCell = r.serial ? "<span>" + esc(r.serial) + "</span>" : "<button type='button' class='biz-btn-sm biz-btn-outline-red' data-act='serial-fill' data-request-id='" + id + "'>시리얼 보완</button>";
+var storeMetaHtml = (r.store_name || r.staff_name || r.ofr_number)
+? "<div class='biz-as-meta' style='margin-top:4px;'>" + esc(r.store_name || "-") + (r.staff_name ? " · " + esc(r.staff_name) : "") + (r.ofr_number ? " · OFR " + esc(r.ofr_number) : "") + "</div>"
+: "";
 return "<tr data-request-id='" + id + "'>" +
 "<td class='biz-as-reqid'>" + id + "</td>" +
-"<td><div class='biz-as-store'>" + esc(r.store_name || "-") + "</div><div class='biz-as-meta'>" + esc(r.staff_name || "-") + (r.ofr_number ? "<br>OFR " + esc(r.ofr_number) : "") + "</div></td>" +
-"<td><div class='biz-brand-name'>" + esc(r.brand) + "</div><div class='biz-model-name'>" + esc(r.model) + "</div></td>" +
+"<td class='biz-brand-name'>" + esc(r.brand) + "</td>" +
+"<td class='biz-model-name'>" + esc(r.model || "-") + "</td>" +
 "<td>" + snCell + "</td>" +
-"<td><div class='biz-as-meta'>" + esc(r.intake_name) + "<br>" + esc(r.intake_phone) + "</div><div class='biz-as-meta' style='margin-top:4px;'>📝 " + esc(r.symptom || "-") + "</div></td>" +
+"<td><div class='biz-as-meta'>" + esc(r.intake_name) + "<br>" + esc(r.intake_phone) + "</div><div class='biz-as-meta' style='margin-top:4px;'>📝 " + esc(r.symptom || "-") + "</div>" + storeMetaHtml + "</td>" +
 "<td class='biz-as-stage-cell'>" + stageCellHtml(r) + "</td>" +
-"<td><button type='button' class='biz-btn-sm biz-btn-dark' data-act='manage' data-request-id='" + id + "'>항목보기</button></td>" +
-"<td><button type='button' class='biz-btn-sm biz-btn-outline-gold' data-act='manage' data-request-id='" + id + "'>메모</button></td>" +
 "<td>" + billingCellHtml(r) + "</td>" +
+"<td class='biz-as-action-cell'>" + actionCellHtml(r) + "</td>" +
 "<td style='font-size:11px;color:var(--biz-muted);white-space:nowrap;'>" + fmtDateDot(r.requested_at) + "</td>" +
 "</tr>";
 }
 
 function renderAS(list) {
 asListCache = list;
-els.asTbody.innerHTML = list.map(renderAsRow).join("") || "<tr><td colspan='10' class='biz-empty-cell'>접수된 AS건이 없습니다.</td></tr>";
+els.asTbody.innerHTML = list.map(renderAsRow).join("") || "<tr><td colspan='9' class='biz-empty-cell'>접수된 AS건이 없습니다.</td></tr>";
 }
 
 function loadAsList() {
-els.asTbody.innerHTML = "<tr><td colspan='10' class='biz-empty-cell'>불러오는 중...</td></tr>";
+els.asTbody.innerHTML = "<tr><td colspan='9' class='biz-empty-cell'>불러오는 중...</td></tr>";
 callApi({ action: "enterpriseGetASList", enterprise_id: session.enterprise_id }).then(function (res) {
-if (!res.success) { els.asTbody.innerHTML = "<tr><td colspan='10' class='biz-empty-cell'>불러오지 못했습니다.</td></tr>"; return; }
+if (!res.success) { els.asTbody.innerHTML = "<tr><td colspan='9' class='biz-empty-cell'>불러오지 못했습니다.</td></tr>"; return; }
 renderAS(res.list || []);
 }).catch(function () {
-els.asTbody.innerHTML = "<tr><td colspan='10' class='biz-empty-cell'>불러오지 못했습니다.</td></tr>";
+els.asTbody.innerHTML = "<tr><td colspan='9' class='biz-empty-cell'>불러오지 못했습니다.</td></tr>";
 });
 }
 
@@ -1333,8 +1379,8 @@ els.mileageSubmitBtn.addEventListener("click", submitMileageAdjust);
 els.voucherSubmitBtn.addEventListener("click", submitVoucherIssue);
 els.paymentSubmitBtn.addEventListener("click", submitPaymentRecord);
 
-// AS 진행 현황 표 안의 모든 인라인 액션(항목보기/메모, 진행단계 토글, 날짜 확인/수정,
-// 결제 재알림, 시리얼 보완, 견적/청구 저장, 출고정보 수정)을 data-act 속성 하나로 위임 처리
+// AS 진행 관리 표 안의 모든 인라인 액션(상세관리, 진행단계 토글, 날짜 확인/수정,
+// 결제재알림, 시리얼 보완, 견적/청구 저장, 출고정보 수정)을 data-act 속성 하나로 위임 처리
 els.asTbody.addEventListener("click", function (e) {
 var el = e.target.closest("[data-act]");
 if (!el) return;
@@ -1369,6 +1415,10 @@ els.asModal.addEventListener("click", function (e) {
 if (e.target === els.asModal) closeAsModal();
 });
 els.asItemAddBtn.addEventListener("click", addAsItem);
+els.asItemType.addEventListener("change", function () {
+if (els.asItemType.value === "기타") { els.asItemName.value = ""; els.asItemName.focus(); }
+else { els.asItemName.value = els.asItemType.value; }
+});
 els.asItemTbody.addEventListener("click", function (e) {
 var btn = e.target.closest("[data-item-id]");
 if (!btn) return;
