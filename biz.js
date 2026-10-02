@@ -6,7 +6,7 @@ var pageNames = {
 "home": "대시보드 홈",
 "customer-list": "고객 목록", "customer-detail": "고객 상세정보", "customer-inquiry": "회원 문의",
 "product-inventory": "재고 관리", "product-qr": "QR 발행·활성화",
-"order-intake": "입고 현황", "as-status": "AS 진행 현황", "shipment": "출고 관리",
+"order-intake": "입고 관리", "as-status": "AS 진행 현황", "shipment": "출고 관리",
 "settlement-summary": "정산 요약", "settlement-history": "정산 내역",
 "insight-ranking": "모델별 AS 랭킹", "insight-failure-type": "고장 유형 분석",
 "insight-period": "처리 기간 분석", "insight-cost": "처리 비용 분석",
@@ -160,16 +160,22 @@ qrGenerateBtn: document.getElementById("bizQrGenerateBtn"),
 qrGenerateResult: document.getElementById("bizQrGenerateResult"),
 qrTbody: document.getElementById("bizQrTbody"),
 intakeBrand: document.getElementById("bizIntakeBrand"),
+intakeBrandCustomWrap: document.getElementById("bizIntakeBrandCustomWrap"),
+intakeBrandCustom: document.getElementById("bizIntakeBrandCustom"),
 intakeModel: document.getElementById("bizIntakeModel"),
 intakeSerial: document.getElementById("bizIntakeSerial"),
 intakeSymptom: document.getElementById("bizIntakeSymptom"),
+intakeRequestNote: document.getElementById("bizIntakeRequestNote"),
 intakeOfr: document.getElementById("bizIntakeOfr"),
 intakeName: document.getElementById("bizIntakeName"),
 intakePhone: document.getElementById("bizIntakePhone"),
 intakePurchaseDate: document.getElementById("bizIntakePurchaseDate"),
 intakeSubmitBtn: document.getElementById("bizIntakeSubmitBtn"),
 intakeResult: document.getElementById("bizIntakeResult"),
-intakeRecentTbody: document.getElementById("bizIntakeRecentTbody")
+intakeListTbody: document.getElementById("bizIntakeListTbody"),
+intakeFilterAll: document.getElementById("bizIntakeFilterAll"),
+intakeFilterOnline: document.getElementById("bizIntakeFilterOnline"),
+intakeFilterStore: document.getElementById("bizIntakeFilterStore")
 };
 
 var session = null;
@@ -185,7 +191,8 @@ var repairPartnersCache = [];
 var assetListCache = [];
 var codeListCache = [];
 var intakeSymptomsLoaded = false;
-var intakeRecentCache = [];
+var intakeListCache = [];
+var intakeChannelFilter = "all";
 
 function showView(name) {
 els.loginView.hidden = name !== "login";
@@ -274,7 +281,7 @@ if (viewId === "shipment") loadShipmentList();
 if (viewId === "insight-period" || viewId === "insight-cost") loadInsightStats();
 if (viewId === "product-inventory") loadAssetList();
 if (viewId === "product-qr") loadCodeList();
-if (viewId === "order-intake") { loadIntakeSymptoms(); renderIntakeRecent(); }
+if (viewId === "order-intake") { loadIntakeSymptoms(); loadIntakeList(); }
 }
 
 function goHome() {
@@ -1154,7 +1161,7 @@ function reactivateCode(codeId) {
 	}).catch(function () { alert("네트워크 오류가 발생했습니다."); });
 }
 
-// ── 입고 현황 / AS 신규 접수 (이 화면에서 접수하면 즉시 AS_Requests + Assets에 등록되고,
+// ── 입고 관리 / AS 신규 접수 (이 화면에서 접수하면 즉시 AS_Requests + Assets에 등록되고,
 //   문자 발송까지 createASRequestCore가 처리 — 이후 진행은 "AS 진행 현황"에서) ──
 function loadIntakeSymptoms() {
 	if (intakeSymptomsLoaded) return;
@@ -1166,38 +1173,78 @@ function loadIntakeSymptoms() {
 	});
 }
 
-function renderIntakeRecent() {
-	els.intakeRecentTbody.innerHTML = intakeRecentCache.map(function (r) {
-		return "<tr><td>" + esc(r.request_id) + "</td><td>" + esc((r.brand + " " + (r.model || "")).trim()) + "</td>" +
-			"<td>" + esc(r.intake_name) + "</td><td>" + esc(r.time) + "</td></tr>";
-	}).join("") || "<tr><td colspan='4' class='biz-empty-cell'>아직 접수한 건이 없습니다.</td></tr>";
+// "입고 관리" 하단 목록 — 세션 한정 캐시가 아니라 enterpriseGetASList(전체 이력, AS 진행 현황과 동일 API)를 그대로 재사용.
+// 새로고침해도, 다른 담당자가 봐도 온라인접수(member_id 있음)/매장접수(member_id 없음) 전체가 동일하게 보임.
+function renderIntakeList(list) {
+	var filtered = list.filter(function (r) {
+		if (intakeChannelFilter === "online") return !!r.member_id;
+		if (intakeChannelFilter === "store") return !r.member_id;
+		return true;
+	});
+	els.intakeListTbody.innerHTML = filtered.map(function (r) {
+		var channelHtml = r.member_id
+			? "<span class='biz-channel-chip biz-channel-online'>온라인 접수</span>"
+			: "<span class='biz-channel-chip biz-channel-store'>매장 접수</span>";
+		var noteHtml = r.request_note
+			? "<div style='font-size:10px;color:var(--biz-muted);margin-top:2px;' title=\"" + esc(r.request_note) + "\">📝 " + esc(r.request_note.length > 16 ? r.request_note.slice(0, 16) + "..." : r.request_note) + "</div>"
+			: "";
+		return "<tr><td>" + esc(r.request_id) + "</td><td>" + channelHtml + "</td>" +
+			"<td>" + esc((r.brand + " " + (r.model || "")).trim()) + "</td>" +
+			"<td>" + esc(r.intake_name || "-") + "</td>" +
+			"<td>" + esc(r.symptom || "-") + noteHtml + "</td>" +
+			"<td style='font-size:11px;color:var(--biz-muted);white-space:nowrap;'>" + (r.requested_at ? new Date(r.requested_at).toLocaleString("ko-KR") : "-") + "</td></tr>";
+	}).join("") || "<tr><td colspan='6' class='biz-empty-cell'>등록된 입고 건이 없습니다.</td></tr>";
+}
+
+function loadIntakeList() {
+	els.intakeListTbody.innerHTML = "<tr><td colspan='6' class='biz-empty-cell'>불러오는 중...</td></tr>";
+	callApi({ action: "enterpriseGetASList", enterprise_id: session.enterprise_id }).then(function (res) {
+		if (!res.success) { els.intakeListTbody.innerHTML = "<tr><td colspan='6' class='biz-empty-cell'>불러오지 못했습니다.</td></tr>"; return; }
+		intakeListCache = res.list || [];
+		renderIntakeList(intakeListCache);
+	}).catch(function () {
+		els.intakeListTbody.innerHTML = "<tr><td colspan='6' class='biz-empty-cell'>불러오지 못했습니다.</td></tr>";
+	});
+}
+
+function setIntakeFilter(channel) {
+	intakeChannelFilter = channel;
+	[els.intakeFilterAll, els.intakeFilterOnline, els.intakeFilterStore].forEach(function (b) { b.classList.remove("biz-filter-active"); });
+	(channel === "online" ? els.intakeFilterOnline : channel === "store" ? els.intakeFilterStore : els.intakeFilterAll).classList.add("biz-filter-active");
+	renderIntakeList(intakeListCache);
 }
 
 function submitIntake() {
-	var brand = els.intakeBrand.value.trim();
+	var brandSelectVal = els.intakeBrand.value;
+	var brand = brandSelectVal === "기타" ? els.intakeBrandCustom.value.trim() : brandSelectVal;
 	var name = els.intakeName.value.trim();
 	var phone = els.intakePhone.value.trim();
 	els.intakeResult.hidden = true;
-	if (!brand || !name || !phone) {
+	if (!brand) {
 		els.intakeResult.hidden = false;
-		els.intakeResult.textContent = "브랜드, 의뢰인 성명, 연락처는 필수입니다.";
+		els.intakeResult.textContent = brandSelectVal === "기타" ? "브랜드명을 입력해주세요." : "브랜드는 필수입니다.";
+		return;
+	}
+	if (!name || !phone) {
+		els.intakeResult.hidden = false;
+		els.intakeResult.textContent = "의뢰인 성명, 연락처는 필수입니다.";
 		return;
 	}
 	els.intakeSubmitBtn.disabled = true;
 	callApi({
 		action: "enterpriseCreateASRequest", enterprise_id: session.enterprise_id,
 		brand: brand, model: els.intakeModel.value.trim(), serial: els.intakeSerial.value.trim(),
-		symptom: els.intakeSymptom.value, ofr_number: els.intakeOfr.value.trim(),
+		symptom: els.intakeSymptom.value, request_note: els.intakeRequestNote.value.trim(), ofr_number: els.intakeOfr.value.trim(),
 		intake_name: name, intake_phone: phone, purchase_date: els.intakePurchaseDate.value
 	}).then(function (res) {
 		els.intakeSubmitBtn.disabled = false;
 		els.intakeResult.hidden = false;
 		els.intakeResult.textContent = res.success ? ("AS 접수가 등록되었습니다. (접수번호 " + res.request_id + ")") : (res.message || "접수에 실패했습니다.");
 		if (res.success) {
-			intakeRecentCache.unshift({ request_id: res.request_id, brand: brand, model: els.intakeModel.value.trim(), intake_name: name, time: new Date().toLocaleString("ko-KR") });
-			renderIntakeRecent();
-			els.intakeBrand.value = ""; els.intakeModel.value = ""; els.intakeSerial.value = "";
-			els.intakeSymptom.value = ""; els.intakeOfr.value = ""; els.intakeName.value = "";
+			loadIntakeList();
+			els.intakeBrand.value = ""; els.intakeBrandCustom.value = ""; els.intakeBrandCustomWrap.hidden = true;
+			els.intakeModel.value = ""; els.intakeSerial.value = "";
+			els.intakeSymptom.value = ""; els.intakeRequestNote.value = ""; els.intakeOfr.value = ""; els.intakeName.value = "";
 			els.intakePhone.value = ""; els.intakePurchaseDate.value = "";
 		}
 	}).catch(function () {
@@ -1338,6 +1385,12 @@ els.qrTbody.addEventListener("click", function (e) {
 });
 
 els.intakeSubmitBtn.addEventListener("click", submitIntake);
+els.intakeBrand.addEventListener("change", function () {
+	els.intakeBrandCustomWrap.hidden = els.intakeBrand.value !== "기타";
+});
+els.intakeFilterAll.addEventListener("click", function () { setIntakeFilter("all"); });
+els.intakeFilterOnline.addEventListener("click", function () { setIntakeFilter("online"); });
+els.intakeFilterStore.addEventListener("click", function () { setIntakeFilter("store"); });
 
 if (!restoreSession()) showView("login");
 })();
