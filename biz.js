@@ -885,27 +885,28 @@ return "<div class='biz-stage-track'>" + dots + "</div>" +
 shipBoxHtml(r);
 }
 
+// 안내문구("선택 항목에 따라...")는 더 이상 행마다 넣지 않음 — "견적/청구" 컬럼 헤더의 (ⓘ) 아이콘 title 툴팁 1곳에만 존재 (2026-10-02 재정돈)
 function billingCellHtml(r) {
 var id = esc(r.request_id);
 return "<div class='biz-billing-edit'>" +
 "<input type='number' class='biz-quote-input' value='" + esc(r.quote_amount || "") + "' placeholder='견적' />" +
 "<input type='number' class='biz-charge-input' value='" + esc(r.charge_amount || "") + "' placeholder='청구' />" +
 "<button type='button' class='biz-btn-sm biz-btn-dark' data-act='billing-save' data-request-id='" + id + "'>저장</button>" +
-"</div>" +
-"<div class='biz-billing-note'>선택 항목에 따라 청구금액이 견적과 다를 수 있습니다</div>";
+"</div>";
 }
 
-// 결제재알림: 견적안내 전/입금완료는 비활성+사유 표시, 그 외엔 발송이력("발송 N회 · 최근 MM.DD HH:mm") 표시
+// 결제재알림: 견적안내 전/입금완료는 비활성 처리 + 사유를 버튼 title 툴팁으로만 표시(행 높이 안 늘어남).
+// 발송이력("발송 N회 · 최근 MM.DD HH:mm")은 CS가 바로 봐야 하는 정보라 계속 1줄 텍스트로 노출.
 function paymentReminderHtml(r) {
 var id = esc(r.request_id);
 if (!r.stage_notified) {
-return { button: "<button type='button' class='biz-btn-xs biz-btn-disabled-sm' disabled>결제재알림</button>", sub: "견적안내 전" };
+return { button: "<button type='button' class='biz-btn-xs biz-btn-disabled-sm' disabled title='견적안내 전'>결제재알림</button>", sub: "" };
 }
 if (r.stage_paid) {
-return { button: "<button type='button' class='biz-btn-xs biz-btn-disabled-sm' disabled>결제재알림</button>", sub: "입금완료" };
+return { button: "<button type='button' class='biz-btn-xs biz-btn-disabled-sm' disabled title='입금완료'>결제재알림</button>", sub: "" };
 }
 var historyText = (r.payment_reminder_count > 0)
-? ("발송 " + r.payment_reminder_count + "회 · 최근 " + fmtDateTimeDot(r.payment_reminder_last_sent))
+? ("발송 " + r.payment_reminder_count + "회·" + fmtDateTimeDot(r.payment_reminder_last_sent))
 : "";
 return {
 button: "<button type='button' class='biz-btn-xs biz-btn-outline-red' data-act='reminder' data-request-id='" + id + "'>결제재알림</button>",
@@ -916,25 +917,27 @@ sub: historyText
 function actionCellHtml(r) {
 var id = esc(r.request_id);
 var reminder = paymentReminderHtml(r);
-return "<div class='biz-as-actions'>" +
+return "<div class='biz-action-wrap'>" +
+"<div class='biz-as-actions'>" +
 "<button type='button' class='biz-btn-xs biz-btn-dark' data-act='manage' data-request-id='" + id + "'>상세관리</button>" +
 reminder.button +
 "</div>" +
-(reminder.sub ? "<div class='biz-reminder-sub'>" + esc(reminder.sub) + "</div>" : "");
+(reminder.sub ? "<div class='biz-reminder-sub'>" + esc(reminder.sub) + "</div>" : "") +
+"</div>";
 }
 
 function renderAsRow(r) {
 var id = esc(r.request_id);
 var snCell = r.serial ? "<span>" + esc(r.serial) + "</span>" : "<button type='button' class='biz-btn-sm biz-btn-outline-red' data-act='serial-fill' data-request-id='" + id + "'>시리얼 보완</button>";
 var storeMetaHtml = (r.store_name || r.staff_name || r.ofr_number)
-? "<div class='biz-as-meta' style='margin-top:4px;'>" + esc(r.store_name || "-") + (r.staff_name ? " · " + esc(r.staff_name) : "") + (r.ofr_number ? " · OFR " + esc(r.ofr_number) : "") + "</div>"
+? "<div class='biz-as-meta biz-meta-ellipsis' style='margin-top:4px;' title='" + esc((r.store_name || "-") + (r.staff_name ? " · " + r.staff_name : "") + (r.ofr_number ? " · OFR " + r.ofr_number : "")) + "'>" + esc(r.store_name || "-") + (r.staff_name ? " · " + esc(r.staff_name) : "") + (r.ofr_number ? " · OFR " + esc(r.ofr_number) : "") + "</div>"
 : "";
 return "<tr data-request-id='" + id + "'>" +
 "<td class='biz-as-reqid'>" + id + "</td>" +
 "<td class='biz-brand-name'>" + esc(r.brand) + "</td>" +
 "<td class='biz-model-name'>" + esc(r.model || "-") + "</td>" +
 "<td>" + snCell + "</td>" +
-"<td><div class='biz-as-meta'>" + esc(r.intake_name) + "<br>" + esc(r.intake_phone) + "</div><div class='biz-as-meta' style='margin-top:4px;'>📝 " + esc(r.symptom || "-") + "</div>" + storeMetaHtml + "</td>" +
+"<td><div class='biz-as-meta'>" + esc(r.intake_name) + "<br>" + esc(r.intake_phone) + "</div><div class='biz-as-meta biz-meta-ellipsis' style='margin-top:4px;' title='" + esc(r.symptom || "-") + "'>📝 " + esc(r.symptom || "-") + "</div>" + storeMetaHtml + "</td>" +
 "<td class='biz-as-stage-cell'>" + stageCellHtml(r) + "</td>" +
 "<td>" + billingCellHtml(r) + "</td>" +
 "<td class='biz-as-action-cell'>" + actionCellHtml(r) + "</td>" +
