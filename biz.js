@@ -150,6 +150,7 @@ asNoteTbody: document.getElementById("bizAsNoteTbody"),
 asNoteInput: document.getElementById("bizAsNoteInput"),
 asNoteAddBtn: document.getElementById("bizAsNoteAddBtn"),
 asNoteResult: document.getElementById("bizAsNoteResult"),
+asModalDoneBtn: document.getElementById("bizAsModalDoneBtn"),
 assetTbody: document.getElementById("bizAssetTbody"),
 qrTotalCount: document.getElementById("bizQrTotalCount"),
 qrActiveCount: document.getElementById("bizQrActiveCount"),
@@ -641,6 +642,16 @@ loadRepairPartners(cached ? cached.current_partner_id : "");
 function closeAsModal() {
 els.asModal.hidden = true;
 currentAsRequestId = "";
+}
+
+// "확인 후 닫기" — 견적 항목/메모는 각자 "추가" 버튼을 누르는 즉시 이미 저장되므로 이 버튼 자체가 별도로 저장하지는 않음.
+// 다만 입력칸에 타이핑만 해두고 "추가"를 안 누른 채 닫으면 그 내용은 저장되지 않으므로, 그런 경우만 확인을 한 번 거친다.
+function hasUnsavedAsModalInput() {
+return !!(els.asItemCost.value || (els.asNoteInput.value && els.asNoteInput.value.trim()));
+}
+function finishAsModal() {
+if (hasUnsavedAsModalInput() && !confirm("입력 중인 견적 항목 비용 또는 메모가 있습니다. \"추가\"를 누르지 않으면 저장되지 않습니다. 그래도 닫으시겠습니까?")) return;
+closeAsModal();
 }
 
 function loadAsItems(requestId) {
@@ -1412,6 +1423,7 @@ if (act === "ship-cancel") { renderAS(asListCache); return; }
 if (act === "ship-save") { handleShipSave(el.closest(".biz-ship-box")); return; }
 });
 els.asModalCloseBtn.addEventListener("click", closeAsModal);
+els.asModalDoneBtn.addEventListener("click", finishAsModal);
 els.asModal.addEventListener("click", function (e) {
 if (e.target === els.asModal) closeAsModal();
 });
