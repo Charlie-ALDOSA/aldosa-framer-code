@@ -667,10 +667,11 @@ item_name: els.asItemName.value, cost: els.asItemCost.value || 0, note: els.asIt
 }).then(function (res) {
 els.asItemAddBtn.disabled = false;
 els.asItemResult.hidden = false;
-els.asItemResult.textContent = res.success ? "항목이 추가되었습니다." : (res.message || "추가에 실패했습니다.");
+els.asItemResult.textContent = res.success ? ("항목이 추가되었습니다. (견적 " + Number(res.quote_amount || 0).toLocaleString() + "원 · 청구 " + Number(res.charge_amount || 0).toLocaleString() + "원으로 자동 반영)") : (res.message || "추가에 실패했습니다.");
 if (res.success) {
 els.asItemType.value = "오버홀"; els.asItemName.value = ""; els.asItemCost.value = ""; els.asItemNote.value = "";
 loadAsItems(currentAsRequestId);
+loadAsList();
 }
 }).catch(function () {
 els.asItemAddBtn.disabled = false;
@@ -682,8 +683,8 @@ els.asItemResult.textContent = "네트워크 오류가 발생했습니다.";
 function deleteAsItem(itemId) {
 callApi({ action: "enterpriseDeleteASItem", enterprise_id: session.enterprise_id, item_id: itemId }).then(function (res) {
 els.asItemResult.hidden = false;
-els.asItemResult.textContent = res.message || (res.success ? "삭제되었습니다." : "삭제에 실패했습니다.");
-if (res.success) loadAsItems(currentAsRequestId);
+els.asItemResult.textContent = res.success ? ("삭제되었습니다. (견적 " + Number(res.quote_amount || 0).toLocaleString() + "원 · 청구 " + Number(res.charge_amount || 0).toLocaleString() + "원으로 자동 반영)") : (res.message || "삭제에 실패했습니다.");
+if (res.success) { loadAsItems(currentAsRequestId); loadAsList(); }
 });
 }
 
