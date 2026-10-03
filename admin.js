@@ -339,7 +339,7 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       el.innerHTML = '<div class="empty-msg">등록된 AS 건이 없습니다.</div>';
       return;
     }
-    var html = '<table class="code-table"><tr><th>접수번호</th><th>점포/담당자</th><th>브랜드/모델</th><th>S/N</th><th>의뢰인</th><th>진행단계</th><th>수리항목</th><th>메모</th><th>견적/청구</th><th>접수일</th></tr>';
+    var html = '<table class="code-table"><tr><th>접수번호</th><th>점포/담당자</th><th>브랜드/모델</th><th>S/N</th><th>의뢰인</th><th>진행단계</th><th>수리항목</th><th>메모</th><th>견적금액/결제금액</th><th>접수일</th></tr>';
     asListCache.slice().reverse().forEach(function(r) {
       html += '<tr>';
       html += '<td style="font-size:10px; color:#888;">' + r.request_id + '</td>';
@@ -580,12 +580,16 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
       .then(function(r) { return r.json(); })
       .then(function() { refreshASManageAndModal(requestId); });
   }
+  // 견적금액 = 전체 항목(필수+선택) 합계, 결제금액 = 필수 + 고객 선택 항목 합계 (모두 VAT 포함, 2026-10-03 결제 흐름 개편)
   function renderBillingCell(r) {
+    var payBadge = r.payment_method
+      ? '<div style="margin-top:4px;"><span class="status-tag ' + (r.payment_method === "수기확인" ? 'tag-대기중' : 'tag-승인') + '">' + r.payment_method + '</span></div>'
+      : '';
     return '<div class="billing-edit">' +
-      '<input type="number" id="quote_' + r.request_id + '" value="' + (r.quote_amount||'') + '" placeholder="견적" />' +
-      '<input type="number" id="charge_' + r.request_id + '" value="' + (r.charge_amount||'') + '" placeholder="청구" />' +
+      '<input type="number" id="quote_' + r.request_id + '" value="' + (r.quote_amount||'') + '" placeholder="견적금액" title="견적금액 (전체 항목 합계, VAT 포함)" />' +
+      '<input type="number" id="charge_' + r.request_id + '" value="' + (r.charge_amount||'') + '" placeholder="결제금액" title="결제금액 (필수 + 고객 선택 항목 합계, VAT 포함)" />' +
       '<button onclick="saveBilling(\'' + r.request_id + '\')">저장</button>' +
-      '</div>';
+      '</div>' + payBadge;
   }
   function saveBilling(requestId) {
     var quote = document.getElementById("quote_" + requestId).value;
@@ -628,6 +632,7 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
   function renderItemsPanel(requestId) {
     var items = asItemsCache[requestId] || [];
     var total = items.reduce(function(sum, it) { return sum + (parseInt(it.cost) || 0); }, 0);
+    var selectedTotal = items.reduce(function(sum, it) { return sum + (it.selected === false ? 0 : (parseInt(it.cost) || 0)); }, 0);
     var arInfo = asListCache.find(function(x) { return x.request_id === requestId; }) || {};
     var html = '<div class="items-panel">';
     html += '<div class="vendor-select-box">';
@@ -652,12 +657,15 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
     html += '<input type="text" id="trackingInfo_' + requestId + '" placeholder="운송장번호" value="' + (arInfo.tracking_info||'') + '" />';
     html += '</div></div>';
     html += '<table class="items-table">';
-    html += '<tr><th>항목</th><th>비고</th><th style="text-align:right;">비용</th><th></th></tr>';
+    html += '<tr><th>구분</th><th>항목</th><th>비고</th><th style="text-align:right;">비용(VAT 포함)</th><th></th></tr>';
     if (items.length === 0) {
-      html += '<tr><td colspan="4" style="text-align:center; color:#bbb; padding:10px;">등록된 항목이 없습니다.</td></tr>';
+      html += '<tr><td colspan="5" style="text-align:center; color:#bbb; padding:10px;">등록된 항목이 없습니다.</td></tr>';
     } else {
       items.forEach(function(it) {
         html += '<tr>';
+        html += '<td>' + (it.required === false
+          ? '<span class="status-tag tag-대기중">선택</span>' + (it.selected === false ? '<div style="font-size:10px;color:#999;margin-top:2px;">고객 제외</div>' : '')
+          : '<span class="status-tag tag-승인">필수</span>') + '</td>';
         html += '<td>' + it.item_name + '</td>';
         html += '<td style="color:#999;">' + (it.note || '-') + '</td>';
         html += '<td style="text-align:right;">' + (parseInt(it.cost)||0).toLocaleString("ko-KR") + '원</td>';
@@ -665,12 +673,11 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
         html += '</tr>';
       });
     }
-var previewVat = Math.round(total * 0.1);
-    var previewCharge = total + previewVat;
-    html += '<tr class="total-row"><td colspan="2">항목 합계 (수수료 포함, 부가세 별도)</td><td style="text-align:right;">' + total.toLocaleString("ko-KR") + '원</td><td></td></tr>';
+    html += '<tr class="total-row"><td colspan="3">견적금액 (전체 항목 합계, VAT 포함)</td><td style="text-align:right;">' + total.toLocaleString("ko-KR") + '원</td><td></td></tr>';
+    html += '<tr class="total-row"><td colspan="3">결제금액 (필수 + 고객 선택 항목, VAT 포함)</td><td style="text-align:right;">' + selectedTotal.toLocaleString("ko-KR") + '원</td><td></td></tr>';
     html += '</table>';
     html += '<div style="background:#FFFBF0; border:1px solid #F0C040; border-radius:2px; padding:10px 12px; font-size:11px; color:#8B6914; margin-bottom:12px; line-height:1.7;">';
-    html += '위 합계에 부가세 10%를 더하면 최종 청구금액 ' + previewCharge.toLocaleString("ko-KR") + '원이 됩니다. 아래 버튼을 눌러야 견적/청구 칸에 자동 반영됩니다.';
+    html += '비용은 부가세 포함 금액 그대로 입력하세요(자동 가산 없음). 항목을 추가·삭제하면 견적금액/결제금액 칸에 바로 자동 반영됩니다. "선택" 항목이 있으면 고객이 마이페이지에서 진행할 항목을 확정해야 결제할 수 있고, 항목이 바뀌면 고객 확정은 초기화됩니다.';
     html += '</div>';
     html += '<div class="vendor-select-box">';
     html += '<label>고객 안내 코멘트 (선택 · 입력 시 고객 마이페이지에 노출됩니다)</label>';
@@ -681,10 +688,10 @@ var previewVat = Math.round(total * 0.1);
     WORK_TYPE_OPTIONS.forEach(function(t) { html += '<option>' + t + '</option>'; });
     html += '</select></div>';
     html += '<div class="field" style="margin-bottom:0;"><input type="text" id="itemName_' + requestId + '" placeholder="항목명" value="' + WORK_TYPE_OPTIONS[0] + '" /></div>';
-    html += '<div class="field" style="margin-bottom:0;"><input type="number" id="itemCost_' + requestId + '" placeholder="비용(원)" /></div>';
+    html += '<div class="field" style="margin-bottom:0;"><input type="number" id="itemCost_' + requestId + '" placeholder="비용(원, VAT 포함)" /></div>';
     html += '</div>';
+    html += '<div class="field" style="margin:8px 0 0; max-width:220px;"><select id="itemRequired_' + requestId + '"><option value="TRUE">필수 항목</option><option value="FALSE">선택 항목 (고객이 진행 여부 선택)</option></select></div>';
     html += '<button class="btn-main" onclick="addASItem(\'' + requestId + '\')">항목 추가</button>';
-    html += '<button class="btn-apply-total" onclick="applyItemsTotal(\'' + requestId + '\',' + total + ')">항목 합계에 부가세 반영하여 청구금액 산출 (' + previewCharge.toLocaleString("ko-KR") + '원)</button>';
     html += '<button class="btn-apply-total" style="background:#1a1a1a;" onclick="printRepairDocument(\'' + requestId + '\')">견적서/청구서/내역서 인쇄</button>';
     html += '</div>';
     document.getElementById("itemsPanel_" + requestId).innerHTML = html;
@@ -699,49 +706,53 @@ var previewVat = Math.round(total * 0.1);
       nameInput.value = typeSel.value;
     }
   }
+  // 항목 추가/삭제 시 서버가 견적금액/결제금액을 자동 재계산해서 응답에 담아줌 → 표의 입력칸에 바로 반영 (2026-10-03, 기존 "부가세 반영" 버튼 대체)
+  function applyRecalcedAmounts(requestId, data) {
+    if (!data || data.quote_amount === undefined) return;
+    var quoteInput = document.getElementById("quote_" + requestId);
+    var chargeInput = document.getElementById("charge_" + requestId);
+    if (quoteInput) quoteInput.value = data.quote_amount;
+    if (chargeInput) chargeInput.value = data.charge_amount;
+    var cached = asListCache.find(function(x) { return x.request_id === requestId; });
+    if (cached) { cached.quote_amount = data.quote_amount; cached.charge_amount = data.charge_amount; }
+  }
   function addASItem(requestId) {
     var type = document.getElementById("itemType_" + requestId).value;
     var name = document.getElementById("itemName_" + requestId).value.trim();
     var cost = document.getElementById("itemCost_" + requestId).value;
+    var requiredEl = document.getElementById("itemRequired_" + requestId);
     if (!name) { alert("항목명을 입력하세요."); return; }
     var params = new URLSearchParams({
       action: "adminAddASItem", admin_key: adminKey, request_id: requestId,
-      item_type: type, item_name: name, cost: cost || 0
+      item_type: type, item_name: name, cost: cost || 0, required: requiredEl ? requiredEl.value : "TRUE"
     });
     fetch(API_URL + "?" + params.toString())
       .then(function(r) { return r.json(); })
-      .then(function() { loadASItems(requestId); });
+      .then(function(data) { applyRecalcedAmounts(requestId, data); loadASItems(requestId); });
   }
   function deleteASItem(itemId, requestId) {
     if (!confirm("이 항목을 삭제할까요?")) return;
     var params = new URLSearchParams({ action: "adminDeleteASItem", admin_key: adminKey, item_id: itemId });
     fetch(API_URL + "?" + params.toString())
       .then(function(r) { return r.json(); })
-      .then(function() { loadASItems(requestId); });
-  }
-function applyItemsTotal(requestId, total) {
-    var vat = Math.round(total * 0.1);
-    var charge = total + vat;
-    var quoteInput = document.getElementById("quote_" + requestId);
-    var chargeInput = document.getElementById("charge_" + requestId);
-    if (quoteInput) quoteInput.value = total;
-    if (chargeInput) chargeInput.value = charge;
-    saveBilling(requestId);
+      .then(function(data) { applyRecalcedAmounts(requestId, data); loadASItems(requestId); });
   }
 
   // ── 견적서/청구서/내역서 인쇄 ─────────────────────────
   function printRepairDocument(requestId) {
     var r = asListCache.find(function(x) { return x.request_id === requestId; }) || {};
+    // 2026-10-03: 항목 금액은 VAT 포함 금액 그대로 — 부가세 별도 가산 제거.
+    // 견적서 = 전체 항목(견적금액) / 청구서·내역서 = 필수 + 고객 선택 항목(결제금액)
     var items = asItemsCache[requestId] || [];
     var total = items.reduce(function(sum, it) { return sum + (parseInt(it.cost) || 0); }, 0);
-    var vat = Math.round(total * 0.1);
-    var charge = total + vat;
+    var charge = items.reduce(function(sum, it) { return sum + (it.selected === false ? 0 : (parseInt(it.cost) || 0)); }, 0);
     var commentEl = document.getElementById("customerComment_" + requestId);
     var commentText = commentEl ? commentEl.value.trim() : (r.customer_comment || "");
 
     var itemRows = "";
     items.forEach(function(it) {
-      itemRows += "<tr><td>" + it.item_name + "</td><td>" + (it.note || "-") + "</td><td>" + (parseInt(it.cost)||0).toLocaleString("ko-KR") + "원</td></tr>";
+      var kind = it.required === false ? "선택" : "필수";
+      itemRows += "<tr" + (it.selected === false ? " class='excluded'" : "") + "><td>" + it.item_name + " <span style='font-size:10px;color:#999;'>(" + kind + ")</span></td><td>" + (it.note || "-") + "</td><td>" + (parseInt(it.cost)||0).toLocaleString("ko-KR") + "원</td></tr>";
     });
     if (items.length === 0) {
       itemRows = '<tr><td colspan="3" style="text-align:center;color:#bbb;">등록된 항목이 없습니다.</td></tr>';
@@ -792,16 +803,20 @@ function applyItemsTotal(requestId, total) {
       "</div>" +
       "<table><tr><th>항목</th><th>비고</th><th>비용</th></tr>" + itemRows + "</table>" +
       "<div class='totals'>" +
-      "<div><span>항목 합계</span><span>" + total.toLocaleString("ko-KR") + "원</span></div>" +
-      "<div><span>부가세(10%)</span><span>" + vat.toLocaleString("ko-KR") + "원</span></div>" +
-      "<div class='grand'><span>합계금액</span><span>" + charge.toLocaleString("ko-KR") + "원</span></div>" +
+      "<div class='quote-only'><span>견적금액 (전체 항목)</span><span>" + total.toLocaleString("ko-KR") + "원</span></div>" +
+      "<div class='grand'><span id='grandLabel'>결제금액</span><span id='grandValue'>" + charge.toLocaleString("ko-KR") + "원</span></div>" +
+      "<div style='font-size:11px;color:#888;justify-content:flex-end;'>부가세 포함</div>" +
       "</div>" +
       (commentText ? "<div class='comment-box'><b>안내사항</b><br>" + commentText + "</div>" : "") +
     "<div class='notice' id='docNoticeText'></div>" +
       "<div class='biz-footer'>(주)레어바이블루 · 대표자 김경순 · 사업자등록번호 191-81-02021 · 통신판매업신고번호 2022-서울강남-06312<br>서울 강남구 테헤란로 82길 15, 3층 55호 (대치동, 디아이타워) · 02-6349-0770 · aldosa.official@gmail.com</div>" +
       "<script>" +
       "var NOTICES={'견적서':'상기 내용은 수리 예정에 대한 예상 비용으로, 실제 진행 시 변경될 수 있습니다.','청구서':'상기 내역으로 수리 확정되어 비용을 청구합니다.','내역서':'상기 내역으로 수리 완료되었음을 확인합니다.'};" +
-      "function updateDoc(){var v=document.getElementById('docType').value;document.getElementById('docTitleText').textContent=v;document.getElementById('docNoticeText').textContent=NOTICES[v];}" +
+      "var QUOTE_TOTAL='" + total.toLocaleString("ko-KR") + "원',CHARGE_TOTAL='" + charge.toLocaleString("ko-KR") + "원';" +
+      "function updateDoc(){var v=document.getElementById('docType').value;document.getElementById('docTitleText').textContent=v;document.getElementById('docNoticeText').textContent=NOTICES[v];" +
+      "var isQuote=v==='견적서';document.querySelectorAll('tr.excluded').forEach(function(tr){tr.style.display=isQuote?'':'none';});" +
+      "document.querySelectorAll('.quote-only').forEach(function(el){el.style.display=isQuote?'none':'flex';});" +
+      "document.getElementById('grandLabel').textContent=isQuote?'견적금액':'결제금액';document.getElementById('grandValue').textContent=isQuote?QUOTE_TOTAL:CHARGE_TOTAL;}" +
       "updateDoc();" +
       "<\/script>" +
       "</body></html>";
@@ -1669,14 +1684,15 @@ function renderCodes() {
         html += '</div>';
       }
       html += '<table class="items-table">';
-      html += '<tr><th>항목</th><th style="width:120px;">원가(원)</th></tr>';
+      html += '<tr><th>항목</th><th style="width:130px;">' + (isPending ? '소비자가(VAT 포함)' : '금액(VAT 포함)') + '</th>' + (isPending ? '<th style="width:90px;">구분</th>' : '') + '</tr>';
       var itemRowsId = "qItems_" + idx;
       html += '<tbody id="' + itemRowsId + '">';
       items.forEach(function(it, itemIdx) {
         var confBadge = it.confidence === "low" ? '<span style="color:#E11D48;font-size:10px;">(확인필요)</span>' : "";
         if (isPending) {
           html += '<tr><td><input value="' + escapeHtmlQ(it.item_name) + '" data-idx="' + idx + '" data-item="' + itemIdx + '" data-field="name" oninput="recalcQuote(' + idx + ')" /> ' + confBadge + '</td>';
-          html += '<td><input type="number" value="' + (it.cost||0) + '" data-idx="' + idx + '" data-field="cost" data-item="' + itemIdx + '" oninput="recalcQuote(' + idx + ')" style="text-align:right;" /></td></tr>';
+          html += '<td><input type="number" value="' + (it.cost||0) + '" data-idx="' + idx + '" data-field="cost" data-item="' + itemIdx + '" oninput="recalcQuote(' + idx + ')" style="text-align:right;" /></td>';
+          html += '<td><select data-field="required" data-idx="' + idx + '" data-item="' + itemIdx + '"><option value="TRUE">필수</option><option value="FALSE">선택</option></select></td></tr>';
         } else {
           html += '<tr><td>' + escapeHtmlQ(it.item_name) + '</td><td style="text-align:right;">' + (parseInt(it.cost)||0).toLocaleString("ko-KR") + '원</td></tr>';
         }
@@ -1687,11 +1703,12 @@ function renderCodes() {
       }
       html += '<div class="items-panel" style="margin-top:6px;">';
       html += '<div class="billing-edit" style="justify-content:space-between; font-size:12px;">';
-      html += '<span>원가 합계 (파트너 정산 기준)</span><span id="qCost_' + idx + '" style="font-weight:600;">' + (parseInt(q.confirmed_cost_amount)||items.reduce(function(s,it){return s+(parseInt(it.cost)||0);},0)).toLocaleString("ko-KR") + '원</span>';
+      html += '<span>견적금액 (전체 항목, VAT 포함)</span><span id="qCost_' + idx + '" style="font-weight:600;">' + (isPending ? items.reduce(function(s,it){return s+(parseInt(it.cost)||0);},0) : (parseInt(q.quote_amount)||0)).toLocaleString("ko-KR") + '원</span>';
       html += '</div>';
-           html += '<div class="billing-edit" style="justify-content:space-between; font-size:13px; margin-top:4px;">';
-      html += '<span>사용자 청구금액 (공급가×1.2 + 부가세10%)</span><span id="qCharge_' + idx + '" style="font-weight:700; color:#C9A84C;">' + (parseInt(q.charge_amount)||0).toLocaleString("ko-KR") + '원</span>';
+      html += '<div class="billing-edit" style="justify-content:space-between; font-size:13px; margin-top:4px;">';
+      html += '<span>결제금액 (필수 + 고객 선택, VAT 포함)</span><span id="qCharge_' + idx + '" style="font-weight:700; color:#C9A84C;">' + (isPending ? items.reduce(function(s,it){return s+(parseInt(it.cost)||0);},0) : (parseInt(q.charge_amount)||0)).toLocaleString("ko-KR") + '원</span>';
       html += '</div>';
+      if (isPending) html += '<div style="font-size:11px; color:#8B6914; margin-top:6px; line-height:1.6;">※ 위 금액은 파트너 제출 원가 그대로입니다. 2026-10-03부터 ×1.2·부가세 자동 가산이 없으므로, 고객에게 받을 금액(VAT 포함)으로 수정한 뒤 확정하세요.</div>';
       html += '</div>';
       if (isPending) {
         html += '<div class="field" style="margin-top:10px;">';
@@ -1712,7 +1729,8 @@ function renderCodes() {
     var tr = document.createElement("tr");
     tr.innerHTML =
       '<td><input value="" data-idx="' + idx + '" data-item="' + newItemIdx + '" data-field="name" oninput="recalcQuote(' + idx + ')" /></td>' +
-      '<td><input type="number" value="0" data-idx="' + idx + '" data-field="cost" data-item="' + newItemIdx + '" oninput="recalcQuote(' + idx + ')" style="text-align:right;" /></td>';
+      '<td><input type="number" value="0" data-idx="' + idx + '" data-field="cost" data-item="' + newItemIdx + '" oninput="recalcQuote(' + idx + ')" style="text-align:right;" /></td>' +
+      '<td><select data-field="required" data-idx="' + idx + '" data-item="' + newItemIdx + '"><option value="TRUE">필수</option><option value="FALSE">선택</option></select></td>';
     tbody.appendChild(tr);
   }
   function getQuoteItems(idx) {
@@ -1722,18 +1740,17 @@ function renderCodes() {
     rows.forEach(function(tr) {
       var nameInput = tr.querySelector('input[data-field="name"]');
       var costInput = tr.querySelector('input[data-field="cost"]');
+      var requiredSel = tr.querySelector('select[data-field="required"]');
       var name = nameInput ? nameInput.value.trim() : "";
       var cost = costInput ? parseFloat(costInput.value) || 0 : 0;
-      if (name) items.push({ item_name: name, cost: cost });
+      if (name) items.push({ item_name: name, cost: cost, required: requiredSel ? requiredSel.value : "TRUE" });
     });
     return items;
   }
   function recalcQuote(idx) {
     var items = getQuoteItems(idx);
     var totalCost = items.reduce(function(s, it) { return s + it.cost; }, 0);
-    var supply = Math.round(totalCost * 1.2);
-    var vat = Math.round(supply * 0.1);
-    var charge = supply + vat;
+    var charge = totalCost; // 고객 선택 전 기본값 = 전체 항목 (선택 항목은 기본 '선택됨')
     var costEl = document.getElementById("qCost_" + idx);
     var chargeEl = document.getElementById("qCharge_" + idx);
     if (costEl) costEl.textContent = totalCost.toLocaleString("ko-KR") + "원";
@@ -1754,7 +1771,7 @@ function renderCodes() {
       .then(function(r) { return r.json(); })
       .then(function(data) {
         if (!data.success) { alert(data.message || "확정 실패"); return; }
-        alert("확정되었습니다. 최종 청구금액: " + parseInt(data.charge_amount).toLocaleString("ko-KR") + "원");
+        alert("확정되었습니다. 견적금액: " + parseInt(data.quote_amount || 0).toLocaleString("ko-KR") + "원 (VAT 포함)");
         loadQuotesAdmin();
       })
       .catch(function() { alert("오류가 발생했습니다."); });
