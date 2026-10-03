@@ -399,6 +399,9 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
     if (r.order_status === "취소요청") {
       return '<div style="margin-top:6px;"><span class="status-tag tag-대기중">취소 요청중</span></div>';
     }
+    if (r.order_status === "부분취소완료") {
+      return '<div style="margin-top:6px;"><span class="status-tag tag-거절">부분취소</span></div>';
+    }
     return "";
   }
   function renderPaymentReminderButton(r) {
@@ -632,7 +635,7 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
   function renderItemsPanel(requestId) {
     var items = asItemsCache[requestId] || [];
     var total = items.reduce(function(sum, it) { return sum + (parseInt(it.cost) || 0); }, 0);
-    var selectedTotal = items.reduce(function(sum, it) { return sum + (it.selected === false ? 0 : (parseInt(it.cost) || 0)); }, 0);
+    var selectedTotal = items.reduce(function(sum, it) { return sum + (it.selected === false || it.cancelled ? 0 : (parseInt(it.cost) || 0)); }, 0);
     var arInfo = asListCache.find(function(x) { return x.request_id === requestId; }) || {};
     var html = '<div class="items-panel">';
     html += '<div class="vendor-select-box">';
@@ -665,7 +668,7 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
         html += '<tr>';
         html += '<td>' + (it.required === false
           ? '<span class="status-tag tag-대기중">선택</span>' + (it.selected === false ? '<div style="font-size:10px;color:#999;margin-top:2px;">고객 제외</div>' : '')
-          : '<span class="status-tag tag-승인">필수</span>') + '</td>';
+          : '<span class="status-tag tag-승인">필수</span>') + (it.cancelled ? '<div style="font-size:10px;color:#E11D48;margin-top:2px;">취소됨</div>' : '') + '</td>';
         html += '<td>' + it.item_name + '</td>';
         html += '<td style="color:#999;">' + (it.note || '-') + '</td>';
         html += '<td style="text-align:right;">' + (parseInt(it.cost)||0).toLocaleString("ko-KR") + '원</td>';
@@ -745,14 +748,14 @@ document.getElementById('aldosa-admin').innerHTML = "<div class=\"header\">\n   
     // 견적서 = 전체 항목(견적금액) / 청구서·내역서 = 필수 + 고객 선택 항목(결제금액)
     var items = asItemsCache[requestId] || [];
     var total = items.reduce(function(sum, it) { return sum + (parseInt(it.cost) || 0); }, 0);
-    var charge = items.reduce(function(sum, it) { return sum + (it.selected === false ? 0 : (parseInt(it.cost) || 0)); }, 0);
+    var charge = items.reduce(function(sum, it) { return sum + (it.selected === false || it.cancelled ? 0 : (parseInt(it.cost) || 0)); }, 0);
     var commentEl = document.getElementById("customerComment_" + requestId);
     var commentText = commentEl ? commentEl.value.trim() : (r.customer_comment || "");
 
     var itemRows = "";
     items.forEach(function(it) {
       var kind = it.required === false ? "선택" : "필수";
-      itemRows += "<tr" + (it.selected === false ? " class='excluded'" : "") + "><td>" + it.item_name + " <span style='font-size:10px;color:#999;'>(" + kind + ")</span></td><td>" + (it.note || "-") + "</td><td>" + (parseInt(it.cost)||0).toLocaleString("ko-KR") + "원</td></tr>";
+      itemRows += "<tr" + (it.selected === false || it.cancelled ? " class='excluded'" : "") + "><td>" + it.item_name + " <span style='font-size:10px;color:#999;'>(" + kind + ")</span></td><td>" + (it.note || "-") + "</td><td>" + (parseInt(it.cost)||0).toLocaleString("ko-KR") + "원</td></tr>";
     });
     if (items.length === 0) {
       itemRows = '<tr><td colspan="3" style="text-align:center;color:#bbb;">등록된 항목이 없습니다.</td></tr>';
