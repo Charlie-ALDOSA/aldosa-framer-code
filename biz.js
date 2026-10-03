@@ -668,7 +668,7 @@ els.asItemType.value = "오버홀";
 els.asPartnerResult.hidden = true;
 els.asNoteResult.hidden = true;
 els.asNoteInput.value = "";
-els.asItemName.value = "";
+els.asItemName.value = "오버홀";
 els.asItemCost.value = "";
 els.asItemNote.value = "";
 if (els.asItemRequired) els.asItemRequired.value = "TRUE";
@@ -712,24 +712,49 @@ return "<tr><td>" + tag + "</td><td>" + esc(it.item_name) + "</td><td>" + Number
 }).join("") || "<tr><td colspan='5' class='biz-empty-cell'>등록된 견적 항목이 없습니다.</td></tr>";
 }
 
+// 2026-10-03 버그 수정: 항목 추가 후(또는 창을 열 때) 드롭다운은 "오버홀"로 보이는데 항목명 칸만 비어 있어서,
+// 드롭다운을 바꾸지 않고(같은 값 선택 시 change 이벤트 없음) "추가"를 누르면 조용히 막히던 문제.
+// 항목명이 비어 있으면 드롭다운 값을 쓰고, 그래도 없으면 눈에 띄게 알림.
 function addAsItem() {
-if (!els.asItemName.value) { els.asItemResult.hidden = false; els.asItemResult.textContent = "항목명을 입력해주세요."; return; }
+if (els.asItemAddBtn.disabled) return;
+var itemName = (els.asItemName.value || "").trim();
+if (!itemName && els.asItemType.value && els.asItemType.value !== "기타") {
+itemName = els.asItemType.value;
+els.asItemName.value = itemName;
+}
+if (!itemName) {
+els.asItemResult.hidden = false;
+els.asItemResult.textContent = "항목명을 입력해주세요.";
+alert("항목명을 입력해주세요.");
+els.asItemName.focus();
+return;
+}
 els.asItemAddBtn.disabled = true;
+els.asItemAddBtn.textContent = "저장 중...";
+// 서버 응답이 느릴 때 그 사이에 다음 항목을 입력해두면, 응답 후 초기화가 그 입력을 지워버리던 문제 방지용 — 보낸 값을 기억해 두고
+// 응답 시점에 입력칸이 그대로일 때만 초기화한다.
+var sentForm = { type: els.asItemType.value, name: els.asItemName.value, cost: els.asItemCost.value, note: els.asItemNote.value, required: els.asItemRequired ? els.asItemRequired.value : "TRUE" };
 callApi({
 action: "enterpriseAddASItem", enterprise_id: session.enterprise_id, request_id: currentAsRequestId,
-item_name: els.asItemName.value, cost: els.asItemCost.value || 0, note: els.asItemNote.value,
+item_type: els.asItemType.value, item_name: itemName, cost: els.asItemCost.value || 0, note: els.asItemNote.value,
 required: els.asItemRequired ? els.asItemRequired.value : "TRUE"
 }).then(function (res) {
 els.asItemAddBtn.disabled = false;
+els.asItemAddBtn.textContent = "추가";
 els.asItemResult.hidden = false;
 els.asItemResult.textContent = res.success ? ("항목이 추가되었습니다. (견적금액 " + Number(res.quote_amount || 0).toLocaleString() + "원 · 결제금액 " + Number(res.charge_amount || 0).toLocaleString() + "원으로 자동 반영)") : (res.message || "추가에 실패했습니다.");
 if (res.success) {
-els.asItemType.value = "오버홀"; els.asItemName.value = ""; els.asItemCost.value = ""; els.asItemNote.value = ""; if (els.asItemRequired) els.asItemRequired.value = "TRUE";
+var formUntouched = els.asItemType.value === sentForm.type && els.asItemName.value === sentForm.name && els.asItemCost.value === sentForm.cost &&
+els.asItemNote.value === sentForm.note && (!els.asItemRequired || els.asItemRequired.value === sentForm.required);
+if (formUntouched) {
+els.asItemType.value = "오버홀"; els.asItemName.value = "오버홀"; els.asItemCost.value = ""; els.asItemNote.value = ""; if (els.asItemRequired) els.asItemRequired.value = "TRUE";
+}
 loadAsItems(currentAsRequestId);
 loadAsList();
 }
 }).catch(function () {
 els.asItemAddBtn.disabled = false;
+els.asItemAddBtn.textContent = "추가";
 els.asItemResult.hidden = false;
 els.asItemResult.textContent = "네트워크 오류가 발생했습니다.";
 });
